@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import RequiredIcon from "../assets/icons/RequiredIcon";
+import CameraIcon from "../assets/icons/CameraIcon";
 
 export default function EditInfomation() {
   const router = useRouter();
@@ -10,7 +11,21 @@ export default function EditInfomation() {
     <main className="flex flex-col items-center justify-between p-14 ">
       <div className="flex flex-col justify-center items-center h-[440px] w-[645px] p-6 gap-3 rounded-md border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]">
         <div className="flex gap-6">
-          <div className="h-[200px] w-[200px] bg-primary"></div>
+          <div className="h-[200px] w-[200px] bg-primary flex flex-col justify-end items-center rounded-lg">
+            <input
+              id="image"
+              type="file"
+              accept=".jpg,.png"
+              className="hidden"
+            />
+            <label
+              className="flex gap-1 justify-center items-center w-28 h-6 text-xs bg-white p-1 rounded-md mb-4 cursor-pointer"
+              htmlFor="image"
+            >
+              <CameraIcon />
+              Upload Image
+            </label>
+          </div>
           <div className="flex flex-col h-[346px] w-[373px] gap-4 items-center justify-center text-xs">
             <div className="w-full gap-1">
               <label htmlFor="title">
@@ -21,15 +36,15 @@ export default function EditInfomation() {
             <div className="flex h-8 w-full gap-1">
               <div className="w-[117px]">
                 <h3 className="">Duration</h3>
-                <div className=""></div>
+                <div className="">file-duration</div>
               </div>
               <div className="w-[117px]">
                 <h3 className="">Size</h3>
-                <div className=""></div>
+                <div className="">file-size</div>
               </div>
               <div className="w-[117px]">
                 <h3 className="">Type</h3>
-                <div className=""></div>
+                <div className="">file-type</div>
               </div>
             </div>
             <div className="w-full gap-1">
@@ -42,11 +57,13 @@ export default function EditInfomation() {
             <div className="flex gap-4">
               <div className="gap-1">
                 <label htmlFor="genre">Genre</label>
-                <input
-                  id="genre"
-                  type="text"
-                  className="w-[178.5px] h-7 rounded border"
-                />
+                <select id="genre" className="w-[178.5px] h-7 rounded border">
+                  <option value="none">None</option>
+                  <option value="ballad">Ballad</option>
+                  <option value="rock">Rock</option>
+                  <option value="rnb">R&amp;B</option>
+                  <option value="acoustic">Acoustic</option>
+                </select>
               </div>
               <div className="gap-1">
                 <label htmlFor="artist">Artist</label>
