@@ -3,10 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-export default function Processing() {
+const Processing = () => {
   const router = useRouter();
   return (
-    <main className="flex flex-col items-center p-14 gap-6 ">
+    <div className="flex flex-col items-center p-14 gap-6 ">
       <div className="flex justify-center items-center h-[162px] w-[645px] p-6 gap-6 rounded-md border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]">
         <Image src={"/next.svg"} width={120} height={120} alt="" />
         <div className="flex flex-col gap-2">
@@ -28,14 +28,10 @@ export default function Processing() {
         </div>
       </div>
       <div className="text-[#979797]">
-        <Link href={"/"} className="text-blue-600">
-          Go Home
-        </Link>{" "}
-        or{" "}
-        <Link href={"/"} className="text-blue-600">
-          Upload another track
-        </Link>
+        <button className="text-blue-600">Go Home</button> or{" "}
+        <button className="text-blue-600">Upload another track</button>
       </div>
-    </main>
+    </div>
   );
-}
+};
+export default Processing;
