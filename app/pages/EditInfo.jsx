@@ -30,16 +30,12 @@ const EditInfo = ({
   const [uploadedImage, setUploadedImage] = useState(null);
   const [uploadedImageURL, setUploadedImageURL] = useState(null);
   const [fileDuration, setFileDuration] = useState(null);
-  //   const audioInfoFile = new File([JSON.stringify(fileInfo)], "audio_info.json", {
-  //   type: "application/json",
-  // });
 
   const audioRef = useRef();
 
   useEffect(() => {
     if (uploadedFile) {
       audioRef.current.src = URL.createObjectURL(uploadedFile);
-      // Lấy duration của file audio
       const audioElement = new Audio();
       audioElement.addEventListener("loadedmetadata", () => {
         const duration = audioElement.duration;
@@ -52,7 +48,6 @@ const EditInfo = ({
   }, [uploadedFile, setDurationFile]);
 
   const fileName = uploadedFile?.name?.split(".").slice(0, -1).join(".");
-  setTitleFile(uploadedFile?.name?.split(".").slice(0, -1).join("."));
   const fileSize = uploadedFile?.size;
   const fileType = uploadedFile?.name?.split(".").pop();
 
@@ -62,7 +57,7 @@ const EditInfo = ({
   const [artist, setArtist] = useState("N/A");
   const [description, setDescription] = useState("");
   const [percent, setPercent] = useState(0);
-
+  setTitleFile(title);
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
@@ -98,11 +93,32 @@ const EditInfo = ({
     const file = event.target.files[0];
     const imageUrl = URL.createObjectURL(file);
     setUploadedImage(file);
-    setUploadedImageFile(file);
+    setUploadedImageFile(imageUrl);
     setUploadedImageURL(imageUrl);
   };
 
+  const fileInfo = {
+    title: title,
+    duration: formatTime(fileDuration),
+    size: formatSize(fileSize),
+    type: fileType,
+    slug: slug,
+    genre: genre,
+    artist: artist,
+    description: description,
+  };
+
+  const audioInfoJSON = JSON.stringify(fileInfo);
+  const audioInfoFile = new File([audioInfoJSON], "audio_info.json", {
+    type: "application/json",
+  });
+
   const handleUpload = async () => {
+    if (!title || !slug) {
+      setShowErrorToast(true);
+      return;
+    }
+
     if (!uploadedFile) {
       alert("Please upload an audio file first!");
       return;
@@ -135,67 +151,132 @@ const EditInfo = ({
       async () => {
         // Audio file uploaded successfully, get download URL
         const audioDownloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        // Upload image file to Firebase Storage
-        const imageFileRef = ref(
-          storage,
-          `/files/${slug}/${uploadedImage?.name}`
-        );
-        const imageUploadTask = uploadBytesResumable(
-          imageFileRef,
-          uploadedImage
-        );
 
-        imageUploadTask.on(
-          "state_changed",
-          (snapshot) => {},
-          (error) => {
-            console.log(error);
-            // Handle upload error
-          },
-          async () => {
-            // Image file uploaded successfully, get download URL
-            const imageDownloadURL = await getDownloadURL(
-              imageUploadTask.snapshot.ref
-            );
-            // Save file info and other data to Firestore
-            const fileInfo = {
-              title,
-              slug,
-              fileDuration,
-              fileType: uploadedFile.type,
-              fileSize: uploadedFile.size,
-              artist,
-              genre,
-              description,
-            };
+        if (uploadedImage) {
+          const imageFileRef = ref(
+            storage,
+            `/files/${slug}/${uploadedImage.name}`
+          );
+          const imageUploadTask = uploadBytesResumable(
+            imageFileRef,
+            uploadedImage
+          );
 
-            try {
-              const docRef = await addDoc(
-                collection(firestore, "files"),
-                fileInfo
+          imageUploadTask.on(
+            "state_changed",
+            (snapshot) => {
+              // Handle image upload progress if needed
+            },
+            (error) => {
+              console.log(error);
+              // Handle upload error
+            },
+            async () => {
+              // Image file uploaded successfully, get download URL
+              const imageDownloadURL = await getDownloadURL(
+                imageUploadTask.snapshot.ref
               );
-              console.log("Document written with ID: ", docRef.id);
-              // Reset form fields
-              setTitle("");
-              setSlug("");
-              setArtist("");
-              setGenre("");
-              setDescription("");
-              setPercent(0);
-              setUploadedImage(null);
-            } catch (error) {
-              console.error("Error adding document: ", error);
-              setShowErrorToast(true);
-              // Handle Firestore error
+
+              const audioInfoJSON = JSON.stringify(fileInfo);
+              const audioInfoFile = new File(
+                [audioInfoJSON],
+                "audio_info.json",
+                {
+                  type: "application/json",
+                }
+              );
+
+              // Upload audio info file to Firebase Storage
+              const audioInfoFileRef = ref(
+                storage,
+                `/files/${slug}/audio_info.json`
+              );
+              const audioInfoUploadTask = uploadBytesResumable(
+                audioInfoFileRef,
+                audioInfoFile
+              );
+
+              audioInfoUploadTask.on(
+                "state_changed",
+                (snapshot) => {
+                  // Handle audio info file upload progress if needed
+                },
+                (error) => {
+                  console.log(error);
+                  // Handle upload error
+                },
+                async () => {
+                  // Audio info file uploaded successfully, get download URL
+                  const audioInfoDownloadURL = await getDownloadURL(
+                    audioInfoUploadTask.snapshot.ref
+                  );
+
+                  try {
+                    const docRef = await addDoc(
+                      collection(firestore, "files"),
+                      fileInfo
+                    );
+                    console.log("Document written with ID: ", docRef.id);
+                  } catch (error) {
+                    console.error("Error adding document: ", error);
+                    setShowErrorToast(true);
+                    // Handle Firestore error
+                  }
+                }
+              );
             }
-          }
-        );
+          );
+        } else {
+          const audioInfoJSON = JSON.stringify(fileInfo);
+          const audioInfoFile = new File([audioInfoJSON], "audio_info.json", {
+            type: "application/json",
+          });
+
+          // Upload audio info file to Firebase Storage
+          const audioInfoFileRef = ref(
+            storage,
+            `/files/${slug}/audio_info.json`
+          );
+          const audioInfoUploadTask = uploadBytesResumable(
+            audioInfoFileRef,
+            audioInfoFile
+          );
+
+          audioInfoUploadTask.on(
+            "state_changed",
+            (snapshot) => {
+              // Handle audio info file upload progress if needed
+            },
+            (error) => {
+              console.log(error);
+              // Handle upload error
+            },
+            async () => {
+              // Audio info file uploaded successfully, get download URL
+              const audioInfoDownloadURL = await getDownloadURL(
+                audioInfoUploadTask.snapshot.ref
+              );
+
+              try {
+                const docRef = await addDoc(
+                  collection(firestore, "files"),
+                  fileInfo
+                );
+                console.log("Document written with ID: ", docRef.id);
+              } catch (error) {
+                console.error("Error adding document: ", error);
+                setShowErrorToast(true);
+                // Handle Firestore error
+              }
+            }
+          );
+        }
       }
     );
   };
+
   const handleChangeTitle = (title) => {
     setTitle(title);
-    //setTitleFile(title);
   };
   const handleChangeArtist = (artist) => {
     setArtist(artist);
@@ -236,7 +317,10 @@ const EditInfo = ({
         <audio ref={audioRef} className="audio-element"></audio>
         <div className="flex flex-col h-[346px] w-[373px] gap-4 items-center justify-center text-xs">
           <div className="w-full gap-1">
-            <label htmlFor="title">
+            <label
+              htmlFor="title"
+              className={` ${title === "" ? "!text-red-500" : ""}`}
+            >
               Title <RequiredIcon />
             </label>
             <input
@@ -244,7 +328,9 @@ const EditInfo = ({
               value={title}
               onChange={(event) => handleChangeTitle(event.target.value)}
               type="text"
-              className="h-7 w-full"
+              className={`h-7 w-full ${
+                title === "" ? "!border-red-500 !outline-red-500" : ""
+              }`}
               maxlength="100"
             />
           </div>
@@ -263,13 +349,18 @@ const EditInfo = ({
             </div>
           </div>
           <div className="w-full gap-1">
-            <label htmlFor="slug">
+            <label
+              htmlFor="slug"
+              className={`${title === "" ? "!text-red-500" : ""}`}
+            >
               Slug <RequiredIcon />
             </label>
             <input
               id="slug"
               type="text"
-              className="h-7 w-full"
+              className={`h-7 w-full ${
+                slug === "" ? "!border-red-500 !outline-red-500" : ""
+              }`}
               value={slug}
               onChange={(event) => setSlug(event.target.value)}
               maxlength="100"
@@ -284,11 +375,11 @@ const EditInfo = ({
                 value={genre}
                 onChange={(event) => handleChangeGenre(event.target.value)}
               >
-                <option value="none">None</option>
-                <option value="ballad">Ballad</option>
-                <option value="rock">Rock</option>
-                <option value="rnb">R&amp;B</option>
-                <option value="acoustic">Acoustic</option>
+                <option value="None">None</option>
+                <option value="Ballad">Ballad</option>
+                <option value="Rock">Rock</option>
+                <option value="RnB">R&amp;B</option>
+                <option value="Acoustic">Acoustic</option>
               </select>
             </div>
             <div className="gap-1">

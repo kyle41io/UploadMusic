@@ -1,12 +1,10 @@
 "use client";
-import React, { useState, useContext, useRef, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import FileContext from "@/utils";
 
 const Upload = ({ setShowEdit, setShowUpload }) => {
   const [dragging, setDragging] = useState(false);
   const { setUploadedFile } = useContext(FileContext);
-
-  //const audioRef = useRef();
 
   function checkAudioType(file) {
     if (file.type.match("audio.*")) return true;
@@ -18,8 +16,6 @@ const Upload = ({ setShowEdit, setShowUpload }) => {
         "Unsupported file type. Only mp3 and wav files are allowed."
       );
     }
-
-    //audioRef.current.src = URL.createObjectURL(file);
 
     setUploadedFile(file);
     setShowUpload(false);
@@ -80,7 +76,6 @@ const Upload = ({ setShowEdit, setShowUpload }) => {
           <p>Max size: 100mb</p>
         </div>
       </div>
-      {/* <audio ref={audioRef} className="audio-element"></audio> */}
     </div>
   );
 };

@@ -17,10 +17,16 @@ const Processing = ({ setShowUpload }) => {
 
   return (
     <div className="flex flex-col items-center p-14 gap-6 ">
-      <div className="flex justify-center items-center h-[162px] w-[645px] p-6 gap-6 rounded-md border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]">
-        <Image src={"/next.svg"} width={120} height={120} alt="" />
+      <div className="flex justify-start items-center h-[162px] w-[645px] p-10 gap-10 rounded-md border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]">
+        <Image
+          src={uploadedImageFile ? `${uploadedImageFile}` : "/Music-Club.jpeg"}
+          width={130}
+          height={130}
+          className="rounded-md"
+          alt=""
+        />
         <div className="flex flex-col gap-2">
-          <h2 className="text-[#0F0F0F] font-medium text-base">
+          <h2 className="text-[#0F0F0F] font-semibold text-base">
             Congratulation, you’ve uploaded successfully !
           </h2>
           <div className="flex text-sm gap-1">
@@ -34,7 +40,11 @@ const Processing = ({ setShowUpload }) => {
               Link
             </label>
             <div className="relative">
-              <input name="link" type="text" className="bg-slate-100 w-full" />
+              <input
+                name="link"
+                type="text"
+                className="bg-slate-100 w-full text-blue-600 p-2 text-sm h-7"
+              />
               <div className="flex justify-center items-center w-5 h-5 rounded-md absolute right-3 top-1/2 -translate-y-[10px] cursor-pointer hover:bg-primary/50">
                 <span className="">
                   <CopyIcon />
