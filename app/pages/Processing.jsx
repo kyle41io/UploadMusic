@@ -1,7 +1,16 @@
 "use client";
 import Image from "next/image";
+import React, { useContext } from "react";
+import CopyIcon from "../assets/icons/CopyIcon";
+import FileContext from "@/utils";
 
 const Processing = ({ setShowUpload }) => {
+  const { titleFile } = useContext(FileContext);
+  const { artistFile } = useContext(FileContext);
+  const { durationFile } = useContext(FileContext);
+  const { genreFile } = useContext(FileContext);
+  const { uploadedImageFile } = useContext(FileContext);
+
   const handleAction = () => {
     setShowUpload(true);
   };
@@ -15,25 +24,38 @@ const Processing = ({ setShowUpload }) => {
             Congratulation, you’ve uploaded successfully !
           </h2>
           <div className="flex text-sm gap-1">
-            <p>Song name</p> <span> - </span> <p>Singer</p>
+            <p>{titleFile}</p> <span> - </span> <p>{artistFile}</p>
           </div>
           <div className="flex gap-4 text-xs text-[#979797]">
-            <p>00:00</p> <p>genre</p>
+            <p>{durationFile}</p> <p>{genreFile}</p>
           </div>
           <div className="flex flex-col gap-[2px]">
-            <label className="text-[#979797] text-sm" htmlFor="link">
+            <label className="text-[#979797] text-xs" htmlFor="link">
               Link
             </label>
-            <input name="link" type="text" className="bg-slate-100 w-full" />
+            <div className="relative">
+              <input name="link" type="text" className="bg-slate-100 w-full" />
+              <div className="flex justify-center items-center w-5 h-5 rounded-md absolute right-3 top-1/2 -translate-y-[10px] cursor-pointer hover:bg-primary/50">
+                <span className="">
+                  <CopyIcon />
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
       <div className="text-[#979797]">
-        <button className="text-blue-600" onClick={handleAction}>
+        <button
+          className="text-blue-600 hover:text-blue-600/80"
+          onClick={handleAction}
+        >
           Go Home
         </button>{" "}
         or{" "}
-        <button className="text-blue-600" onClick={handleAction}>
+        <button
+          className="text-blue-600 hover:text-blue-600/80"
+          onClick={handleAction}
+        >
           Upload another track
         </button>
       </div>

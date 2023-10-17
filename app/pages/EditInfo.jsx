@@ -21,10 +21,18 @@ const EditInfo = ({
   setShowErrorToast,
 }) => {
   const { uploadedFile } = useContext(FileContext);
+  const { setTitleFile } = useContext(FileContext);
+  const { setArtistFile } = useContext(FileContext);
+  const { setDurationFile } = useContext(FileContext);
+  const { setGenreFile } = useContext(FileContext);
+  const { setUploadedImageFile } = useContext(FileContext);
 
   const [uploadedImage, setUploadedImage] = useState(null);
   const [uploadedImageURL, setUploadedImageURL] = useState(null);
   const [fileDuration, setFileDuration] = useState(null);
+  //   const audioInfoFile = new File([JSON.stringify(fileInfo)], "audio_info.json", {
+  //   type: "application/json",
+  // });
 
   const audioRef = useRef();
 
@@ -37,19 +45,21 @@ const EditInfo = ({
         const duration = audioElement.duration;
 
         setFileDuration(duration);
+        setDurationFile(formatTime(duration));
       });
       audioElement.src = URL.createObjectURL(uploadedFile);
     }
-  }, [uploadedFile]);
+  }, [uploadedFile, setDurationFile]);
 
   const fileName = uploadedFile?.name?.split(".").slice(0, -1).join(".");
+  setTitleFile(uploadedFile?.name?.split(".").slice(0, -1).join("."));
   const fileSize = uploadedFile?.size;
   const fileType = uploadedFile?.name?.split(".").pop();
 
   const [title, setTitle] = useState(fileName || "");
   const [slug, setSlug] = useState(slugify(fileName || ""));
   const [genre, setGenre] = useState("none");
-  const [artist, setArtist] = useState("");
+  const [artist, setArtist] = useState("N/A");
   const [description, setDescription] = useState("");
   const [percent, setPercent] = useState(0);
 
@@ -88,6 +98,7 @@ const EditInfo = ({
     const file = event.target.files[0];
     const imageUrl = URL.createObjectURL(file);
     setUploadedImage(file);
+    setUploadedImageFile(file);
     setUploadedImageURL(imageUrl);
   };
 
@@ -148,17 +159,14 @@ const EditInfo = ({
             );
             // Save file info and other data to Firestore
             const fileInfo = {
-              fileName: uploadedFile.name,
+              title,
+              slug,
               fileDuration,
               fileType: uploadedFile.type,
               fileSize: uploadedFile.size,
-              title,
-              slug,
               artist,
               genre,
               description,
-              imageURL: imageDownloadURL,
-              audioURL: audioDownloadURL,
             };
 
             try {
@@ -184,6 +192,18 @@ const EditInfo = ({
         );
       }
     );
+  };
+  const handleChangeTitle = (title) => {
+    setTitle(title);
+    //setTitleFile(title);
+  };
+  const handleChangeArtist = (artist) => {
+    setArtist(artist);
+    setArtistFile(artist);
+  };
+  const handleChangeGenre = (genre) => {
+    setGenre(genre);
+    setGenreFile(genre);
   };
 
   return (
@@ -222,7 +242,7 @@ const EditInfo = ({
             <input
               id="title"
               value={title}
-              onChange={(event) => setTitle(event.target.value)}
+              onChange={(event) => handleChangeTitle(event.target.value)}
               type="text"
               className="h-7 w-full"
               maxlength="100"
@@ -262,7 +282,7 @@ const EditInfo = ({
                 id="genre"
                 className="w-[178.5px] h-7 rounded border"
                 value={genre}
-                onChange={(event) => setGenre(event.target.value)}
+                onChange={(event) => handleChangeGenre(event.target.value)}
               >
                 <option value="none">None</option>
                 <option value="ballad">Ballad</option>
@@ -278,7 +298,7 @@ const EditInfo = ({
                 id="artist"
                 type="text"
                 className="w-[178.5px] h-7 rounded border"
-                onChange={(event) => setArtist(event.target.value)}
+                onChange={(event) => handleChangeArtist(event.target.value)}
               />
             </div>
           </div>
