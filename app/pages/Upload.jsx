@@ -1,21 +1,26 @@
 "use client";
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useRef, useEffect } from "react";
 import FileContext from "@/utils";
 
 const Upload = ({ setShowEdit, setShowUpload }) => {
   const [dragging, setDragging] = useState(false);
   const { setUploadedFile } = useContext(FileContext);
 
-  function getAudioType(file) {
+  //const audioRef = useRef();
+
+  function checkAudioType(file) {
     if (file.type.match("audio.*")) return true;
   }
 
   const handleFileChange = (file) => {
-    if (!getAudioType(file)) {
+    if (!checkAudioType(file)) {
       return alert(
         "Unsupported file type. Only mp3 and wav files are allowed."
       );
     }
+
+    //audioRef.current.src = URL.createObjectURL(file);
+
     setUploadedFile(file);
     setShowUpload(false);
     setShowEdit(true);
@@ -39,17 +44,19 @@ const Upload = ({ setShowEdit, setShowUpload }) => {
 
   return (
     <div
-      className={`flex flex-col items-center justify-between p-14 ${
-        dragging
-          ? "border-primary/75 border-4 border-dashed"
-          : "border-[#DCDCDC]"
-      }`}
+      className={"flex flex-col items-center justify-between p-14 "}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <div className="flex flex-col justify-center items-center h-[335px] w-[645px] p-6 gap-3 rounded-md border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]">
+      <div
+        className={`flex flex-col justify-center items-center h-[335px] w-[645px] p-6 gap-3 rounded-md ${
+          dragging
+            ? "border-primary/75 border-4 border-dashed"
+            : "border-[#DCDCDC]"
+        } shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]`}
+      >
         <input
           id="file"
           type="file"
@@ -73,6 +80,7 @@ const Upload = ({ setShowEdit, setShowUpload }) => {
           <p>Max size: 100mb</p>
         </div>
       </div>
+      {/* <audio ref={audioRef} className="audio-element"></audio> */}
     </div>
   );
 };

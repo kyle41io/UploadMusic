@@ -1,10 +1,11 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 
-const Processing = () => {
-  const router = useRouter();
+const Processing = ({ setShowUpload }) => {
+  const handleAction = () => {
+    setShowUpload(true);
+  };
+
   return (
     <div className="flex flex-col items-center p-14 gap-6 ">
       <div className="flex justify-center items-center h-[162px] w-[645px] p-6 gap-6 rounded-md border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]">
@@ -28,8 +29,13 @@ const Processing = () => {
         </div>
       </div>
       <div className="text-[#979797]">
-        <button className="text-blue-600">Go Home</button> or{" "}
-        <button className="text-blue-600">Upload another track</button>
+        <button className="text-blue-600" onClick={handleAction}>
+          Go Home
+        </button>{" "}
+        or{" "}
+        <button className="text-blue-600" onClick={handleAction}>
+          Upload another track
+        </button>
       </div>
     </div>
   );

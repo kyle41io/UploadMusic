@@ -1,19 +1,22 @@
 "use client";
-import { useState, createContext, useContext, useEffect } from "react";
+import { useState, useEffect } from "react";
 import StepBar from "./components/StepBar";
-import Upload from "./components/Upload";
-import EditInfo from "./components/EditInfo";
-import Processing from "./components/Processing";
+import Upload from "./pages/Upload";
+import EditInfo from "./pages/EditInfo";
+import Processing from "./pages/Processing";
 import { FileProvider } from "@/utils";
+import Success from "./components/Success";
+import Error from "./components/Error";
 
 export default function Home() {
   const [showUpload, setShowUpload] = useState(true);
   const [showEdit, setShowEdit] = useState(false);
   const [showProcessing, setShowProcessing] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
 
   useEffect(() => {
-    File;
     if (showUpload) {
       setCurrentStep(1);
       setShowEdit(false);
@@ -29,6 +32,11 @@ export default function Home() {
     }
   }, [showUpload, showEdit, showProcessing]);
 
+  const handleCloseToast = () => {
+    setShowSuccessToast(false);
+    setShowErrorToast(false);
+  };
+
   return (
     <main className="flex flex-col items-center">
       <StepBar currentStep={currentStep} />
@@ -36,9 +44,25 @@ export default function Home() {
         {showUpload && (
           <Upload setShowEdit={setShowEdit} setShowUpload={setShowUpload} />
         )}
-        {showEdit && <EditInfo />}
-        {showProcessing && <Processing />}
+        {showEdit && (
+          <EditInfo
+            setShowUpload={setShowUpload}
+            setShowProcessing={setShowProcessing}
+            setShowEdit={setShowEdit}
+            setShowErrorToast={setShowErrorToast}
+            setShowSuccessToast={setShowSuccessToast}
+          />
+        )}
+        {showProcessing && <Processing setShowUpload={setShowUpload} />}
       </FileProvider>
+      <div
+        className={`toast-container ${
+          showSuccessToast || showErrorToast ? "show" : ""
+        }`}
+      >
+        {showSuccessToast && <Success onClose={handleCloseToast} />}
+        {showErrorToast && <Error onClose={handleCloseToast} />}
+      </div>
     </main>
   );
 }
