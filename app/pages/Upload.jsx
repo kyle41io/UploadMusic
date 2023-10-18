@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useContext } from "react";
-import FileContext from "@/utils";
+import FileContext from "@/app/utils";
 
 const Upload = ({ setShowEdit, setShowUpload }) => {
   const [dragging, setDragging] = useState(false);

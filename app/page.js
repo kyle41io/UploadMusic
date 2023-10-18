@@ -4,17 +4,19 @@ import StepBar from "./components/StepBar";
 import Upload from "./pages/Upload";
 import EditInfo from "./pages/EditInfo";
 import Processing from "./pages/Processing";
-import { FileProvider } from "@/utils";
+import { FileProvider } from "@/app/utils";
 import Success from "./components/Success";
 import Error from "./components/Error";
+import SuccessTickIcon from "./assets/icons/SuccessTickIcon";
 
 export default function Home() {
   const [showUpload, setShowUpload] = useState(true);
   const [showEdit, setShowEdit] = useState(false);
   const [showProcessing, setShowProcessing] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(true);
   const [showErrorToast, setShowErrorToast] = useState(false);
+  const [closingToast, setClosingToast] = useState(false);
 
   useEffect(() => {
     if (showUpload) {
@@ -32,9 +34,23 @@ export default function Home() {
     }
   }, [showUpload, showEdit, showProcessing]);
 
+  useEffect(() => {
+    let timeout;
+    if (showSuccessToast || showErrorToast) {
+      timeout = setTimeout(() => {
+        handleCloseToast();
+      }, 5000);
+    }
+    return () => clearTimeout(timeout);
+  }, [showSuccessToast, showErrorToast]);
+
   const handleCloseToast = () => {
-    setShowSuccessToast(false);
-    setShowErrorToast(false);
+    setClosingToast(true);
+    setTimeout(() => {
+      setShowSuccessToast(false);
+      setShowErrorToast(false);
+      setClosingToast(false);
+    }, 500);
   };
 
   return (
@@ -57,8 +73,8 @@ export default function Home() {
       </FileProvider>
       <div
         className={`toast-container ${
-          showSuccessToast || showErrorToast ? "show" : ""
-        }`}
+          (showSuccessToast || showErrorToast) && !closingToast ? "show" : ""
+        } ${closingToast ? "closing" : ""}`}
       >
         {showSuccessToast && <Success onClose={handleCloseToast} />}
         {showErrorToast && <Error onClose={handleCloseToast} />}

@@ -2,7 +2,7 @@
 import Image from "next/image";
 import React, { useContext } from "react";
 import CopyIcon from "../assets/icons/CopyIcon";
-import FileContext from "@/utils";
+import FileContext from "@/app/utils";
 
 const Processing = ({ setShowUpload }) => {
   const { titleFile } = useContext(FileContext);
@@ -30,7 +30,8 @@ const Processing = ({ setShowUpload }) => {
             Congratulation, you’ve uploaded successfully !
           </h2>
           <div className="flex text-sm gap-1">
-            <p>{titleFile}</p> <span> - </span> <p>{artistFile}</p>
+            <p>{titleFile}</p> <span> - </span>{" "}
+            <p>{artistFile ? artistFile : "N/A"}</p>
           </div>
           <div className="flex gap-4 text-xs text-[#979797]">
             <p>{durationFile}</p> <p>{genreFile}</p>

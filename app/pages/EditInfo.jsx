@@ -1,6 +1,6 @@
 "use client";
 import React, { useContext, useState, useRef, useEffect } from "react";
-import FileContext from "@/utils";
+import FileContext from "@/app/utils";
 import storage from "@/firebaseConfig.js";
 import {
   getStorage,
@@ -185,7 +185,6 @@ const EditInfo = ({
                   type: "application/json",
                 }
               );
-
               // Upload audio info file to Firebase Storage
               const audioInfoFileRef = ref(
                 storage,
@@ -351,7 +350,7 @@ const EditInfo = ({
           <div className="w-full gap-1">
             <label
               htmlFor="slug"
-              className={`${title === "" ? "!text-red-500" : ""}`}
+              className={`${slug === "" ? "!text-red-500" : ""}`}
             >
               Slug <RequiredIcon />
             </label>
