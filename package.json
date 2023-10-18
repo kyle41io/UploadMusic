@@ -1,5 +1,10 @@
 {
   "name": "music_upload_task",
+  "browser": {
+    "fs": false,
+    "os": false,
+    "path": false
+  },
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -12,6 +17,7 @@
     "firebase": "^10.5.0",
     "next": "13.5.4",
     "nextjs-toploader": "^1.4.2",
+    "node-id3": "^0.2.6",
     "react": "^18",
     "react-dom": "^18",
     "react-icons": "^4.11.0"
