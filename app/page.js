@@ -14,7 +14,7 @@ export default function Home() {
   const [showEdit, setShowEdit] = useState(false);
   const [showProcessing, setShowProcessing] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const [showSuccessToast, setShowSuccessToast] = useState(true);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [closingToast, setClosingToast] = useState(false);
 
