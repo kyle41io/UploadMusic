@@ -1,15 +1,47 @@
 "use client";
 import Image from "next/image";
-import React, { useContext } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import CopyIcon from "../assets/icons/CopyIcon";
 import FileContext from "@/app/utils";
+import { getStorage, ref, getDownloadURL, uploadBytes } from "firebase/storage";
 
 const Processing = ({ setShowUpload }) => {
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [audioURL, setAudioURL] = useState("");
+  const { uploadedFile } = useContext(FileContext);
   const { titleFile } = useContext(FileContext);
   const { artistFile } = useContext(FileContext);
   const { durationFile } = useContext(FileContext);
   const { genreFile } = useContext(FileContext);
+  const { slugFile } = useContext(FileContext);
   const { uploadedImageFile } = useContext(FileContext);
+
+  useEffect(() => {
+    const storage = getStorage();
+    const storageRef = ref(storage, `/files/${slugFile}/${titleFile}`);
+
+    uploadBytes(storageRef, uploadedFile)
+      .then((snapshot) => {
+        // Audio file uploaded successfully, get download URL
+        getDownloadURL(snapshot.ref)
+          .then((url) => {
+            setAudioURL(url);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [uploadedFile, slugFile, titleFile]);
+
+  const handleCopyLink = () => {
+    const linkInput = document.getElementById("link-input");
+    linkInput.select();
+    document.execCommand("copy");
+    setCopySuccess(true);
+  };
 
   const handleAction = () => {
     setShowUpload(true);
@@ -42,15 +74,27 @@ const Processing = ({ setShowUpload }) => {
             </label>
             <div className="relative">
               <input
+                id="link-input"
                 name="link"
                 type="text"
-                className="bg-slate-100 w-full text-blue-600 p-2 text-sm h-7"
+                placeholder={audioURL ? "" : "loading..."}
+                className="bg-slate-100/50 w-full text-blue-600 p-2 text-sm h-7"
+                value={audioURL}
+                readOnly
               />
-              <div className="flex justify-center items-center w-5 h-5 rounded-md absolute right-3 top-1/2 -translate-y-[10px] cursor-pointer hover:bg-primary/50">
+              <div
+                className="flex justify-center items-center w-5 h-5 rounded-md absolute right-3 top-1/2 -translate-y-[10px] cursor-pointer hover:bg-primary/50"
+                onClick={handleCopyLink}
+              >
                 <span className="">
                   <CopyIcon />
                 </span>
               </div>
+              {copySuccess && (
+                <p className="text-green-600 text-xs absolute bottom-0 left-0 ml-2 mb-1">
+                  Copied to clipboard!
+                </p>
+              )}
             </div>
           </div>
         </div>

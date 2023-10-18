@@ -25,6 +25,7 @@ const EditInfo = ({
   const { setArtistFile } = useContext(FileContext);
   const { setDurationFile } = useContext(FileContext);
   const { setGenreFile } = useContext(FileContext);
+  const { setSlugFile } = useContext(FileContext);
   const { setUploadedImageFile } = useContext(FileContext);
 
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -58,6 +59,7 @@ const EditInfo = ({
   const [description, setDescription] = useState("");
   const [percent, setPercent] = useState(0);
   setTitleFile(title);
+  setSlugFile(slug);
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
@@ -97,22 +99,182 @@ const EditInfo = ({
     setUploadedImageURL(imageUrl);
   };
 
-  const fileInfo = {
-    title: title,
-    duration: formatTime(fileDuration),
-    size: formatSize(fileSize),
-    type: fileType,
-    slug: slug,
-    genre: genre,
-    artist: artist,
-    description: description,
-  };
+  // const fileInfo = {
+  //   title: title,
+  //   duration: formatTime(fileDuration),
+  //   size: formatSize(fileSize),
+  //   type: fileType,
+  //   slug: slug,
+  //   genre: genre,
+  //   artist: artist,
+  //   description: description,
+  // };
 
-  const audioInfoJSON = JSON.stringify(fileInfo);
-  const audioInfoFile = new File([audioInfoJSON], "audio_info.json", {
-    type: "application/json",
-  });
+  // const audioInfoJSON = JSON.stringify(fileInfo);
+  // const audioInfoFile = new File([audioInfoJSON], "audio_info.json", {
+  //   type: "application/json",
+  // });
 
+  // const handleUpload = async () => {
+  //   if (!title || !slug) {
+  //     setShowErrorToast(true);
+  //     return;
+  //   }
+
+  //   if (!uploadedFile) {
+  //     alert("Please upload an audio file first!");
+  //     return;
+  //   }
+
+  //   const storage = getStorage();
+  //   const firestore = getFirestore();
+  //   const fileRef = ref(storage, `/files/${slug}/${title}`);
+
+  //   // Upload audio file to Firebase Storage
+  //   const uploadTask = uploadBytesResumable(fileRef, uploadedFile);
+
+  //   uploadTask.on(
+  //     "state_changed",
+  //     (snapshot) => {
+  //       const percent = Math.round(
+  //         (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+  //       );
+  //       setPercent(percent);
+  //       if (percent === 100) {
+  //         setShowEdit(false);
+  //         setShowProcessing(true);
+  //         setShowSuccessToast(true);
+  //       }
+  //     },
+  //     (error) => {
+  //       console.log(error);
+  //       // Handle upload error
+  //     },
+  //     async () => {
+  //       // Audio file uploaded successfully, get download URL
+  //       const audioDownloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
+  //       if (uploadedImage) {
+  //         const imageFileRef = ref(
+  //           storage,
+  //           `/files/${slug}/${uploadedImage.name}`
+  //         );
+  //         const imageUploadTask = uploadBytesResumable(
+  //           imageFileRef,
+  //           uploadedImage
+  //         );
+
+  //         imageUploadTask.on(
+  //           "state_changed",
+  //           (snapshot) => {
+  //             // Handle image upload progress if needed
+  //           },
+  //           (error) => {
+  //             console.log(error);
+  //             // Handle upload error
+  //           },
+  //           async () => {
+  //             // Image file uploaded successfully, get download URL
+  //             const imageDownloadURL = await getDownloadURL(
+  //               imageUploadTask.snapshot.ref
+  //             );
+
+  //             const audioInfoJSON = JSON.stringify(fileInfo);
+  //             const audioInfoFile = new File(
+  //               [audioInfoJSON],
+  //               "audio_info.json",
+  //               {
+  //                 type: "application/json",
+  //               }
+  //             );
+  //             // Upload audio info file to Firebase Storage
+  //             const audioInfoFileRef = ref(
+  //               storage,
+  //               `/files/${slug}/audio_info.json`
+  //             );
+  //             const audioInfoUploadTask = uploadBytesResumable(
+  //               audioInfoFileRef,
+  //               audioInfoFile
+  //             );
+
+  //             audioInfoUploadTask.on(
+  //               "state_changed",
+  //               (snapshot) => {
+  //                 // Handle audio info file upload progress if needed
+  //               },
+  //               (error) => {
+  //                 console.log(error);
+  //                 // Handle upload error
+  //               },
+  //               async () => {
+  //                 // Audio info file uploaded successfully, get download URL
+  //                 const audioInfoDownloadURL = await getDownloadURL(
+  //                   audioInfoUploadTask.snapshot.ref
+  //                 );
+
+  //                 try {
+  //                   const docRef = await addDoc(
+  //                     collection(firestore, "files"),
+  //                     fileInfo
+  //                   );
+  //                   console.log("Document written with ID: ", docRef.id);
+  //                 } catch (error) {
+  //                   console.error("Error adding document: ", error);
+  //                   setShowErrorToast(true);
+  //                   // Handle Firestore error
+  //                 }
+  //               }
+  //             );
+  //           }
+  //         );
+  //       } else {
+  //         const audioInfoJSON = JSON.stringify(fileInfo);
+  //         const audioInfoFile = new File([audioInfoJSON], "audio_info.json", {
+  //           type: "application/json",
+  //         });
+
+  //         // Upload audio info file to Firebase Storage
+  //         const audioInfoFileRef = ref(
+  //           storage,
+  //           `/files/${slug}/audio_info.json`
+  //         );
+  //         const audioInfoUploadTask = uploadBytesResumable(
+  //           audioInfoFileRef,
+  //           audioInfoFile
+  //         );
+
+  //         audioInfoUploadTask.on(
+  //           "state_changed",
+  //           (snapshot) => {
+  //             // Handle audio info file upload progress if needed
+  //           },
+  //           (error) => {
+  //             console.log(error);
+  //             // Handle upload error
+  //           },
+  //           async () => {
+  //             // Audio info file uploaded successfully, get download URL
+  //             const audioInfoDownloadURL = await getDownloadURL(
+  //               audioInfoUploadTask.snapshot.ref
+  //             );
+
+  //             try {
+  //               const docRef = await addDoc(
+  //                 collection(firestore, "files"),
+  //                 fileInfo
+  //               );
+  //               console.log("Document written with ID: ", docRef.id);
+  //             } catch (error) {
+  //               console.error("Error adding document: ", error);
+  //               setShowErrorToast(true);
+  //               // Handle Firestore error
+  //             }
+  //           }
+  //         );
+  //       }
+  //     }
+  //   );
+  // };
   const handleUpload = async () => {
     if (!title || !slug) {
       setShowErrorToast(true);
@@ -126,7 +288,7 @@ const EditInfo = ({
 
     const storage = getStorage();
     const firestore = getFirestore();
-    const fileRef = ref(storage, `/files/${slug}/${uploadedFile.name}`);
+    const fileRef = ref(storage, `/files/${slug}/${title}`);
 
     // Upload audio file to Firebase Storage
     const uploadTask = uploadBytesResumable(fileRef, uploadedFile);
@@ -177,89 +339,23 @@ const EditInfo = ({
                 imageUploadTask.snapshot.ref
               );
 
-              const audioInfoJSON = JSON.stringify(fileInfo);
-              const audioInfoFile = new File(
-                [audioInfoJSON],
-                "audio_info.json",
-                {
-                  type: "application/json",
-                }
-              );
-              // Upload audio info file to Firebase Storage
-              const audioInfoFileRef = ref(
-                storage,
-                `/files/${slug}/audio_info.json`
-              );
-              const audioInfoUploadTask = uploadBytesResumable(
-                audioInfoFileRef,
-                audioInfoFile
-              );
-
-              audioInfoUploadTask.on(
-                "state_changed",
-                (snapshot) => {
-                  // Handle audio info file upload progress if needed
-                },
-                (error) => {
-                  console.log(error);
-                  // Handle upload error
-                },
-                async () => {
-                  // Audio info file uploaded successfully, get download URL
-                  const audioInfoDownloadURL = await getDownloadURL(
-                    audioInfoUploadTask.snapshot.ref
-                  );
-
-                  try {
-                    const docRef = await addDoc(
-                      collection(firestore, "files"),
-                      fileInfo
-                    );
-                    console.log("Document written with ID: ", docRef.id);
-                  } catch (error) {
-                    console.error("Error adding document: ", error);
-                    setShowErrorToast(true);
-                    // Handle Firestore error
-                  }
-                }
-              );
-            }
-          );
-        } else {
-          const audioInfoJSON = JSON.stringify(fileInfo);
-          const audioInfoFile = new File([audioInfoJSON], "audio_info.json", {
-            type: "application/json",
-          });
-
-          // Upload audio info file to Firebase Storage
-          const audioInfoFileRef = ref(
-            storage,
-            `/files/${slug}/audio_info.json`
-          );
-          const audioInfoUploadTask = uploadBytesResumable(
-            audioInfoFileRef,
-            audioInfoFile
-          );
-
-          audioInfoUploadTask.on(
-            "state_changed",
-            (snapshot) => {
-              // Handle audio info file upload progress if needed
-            },
-            (error) => {
-              console.log(error);
-              // Handle upload error
-            },
-            async () => {
-              // Audio info file uploaded successfully, get download URL
-              const audioInfoDownloadURL = await getDownloadURL(
-                audioInfoUploadTask.snapshot.ref
-              );
+              const audioInfo = {
+                title: title,
+                duration: formatTime(fileDuration),
+                size: formatSize(fileSize),
+                type: fileType,
+                slug: slug,
+                genre: genre,
+                artist: artist,
+                description: description,
+                audioDownloadURL: audioDownloadURL,
+                imageDownloadURL: imageDownloadURL,
+              };
 
               try {
                 const docRef = await addDoc(
                   collection(firestore, "files"),
-                  fileInfo
+                  audioInfo
                 );
                 console.log("Document written with ID: ", docRef.id);
               } catch (error) {
@@ -269,6 +365,30 @@ const EditInfo = ({
               }
             }
           );
+        } else {
+          const audioInfo = {
+            title: title,
+            duration: formatTime(fileDuration),
+            size: formatSize(fileSize),
+            type: fileType,
+            slug: slug,
+            genre: genre,
+            artist: artist,
+            description: description,
+            audioDownloadURL: audioDownloadURL,
+          };
+
+          try {
+            const docRef = await addDoc(
+              collection(firestore, "files"),
+              audioInfo
+            );
+            console.log("Document written with ID: ", docRef.id);
+          } catch (error) {
+            console.error("Error adding document: ", error);
+            setShowErrorToast(true);
+            // Handle Firestore error
+          }
         }
       }
     );
@@ -284,6 +404,9 @@ const EditInfo = ({
   const handleChangeGenre = (genre) => {
     setGenre(genre);
     setGenreFile(genre);
+  };
+  const handleChangeSlug = (slug) => {
+    setSlug(slug);
   };
 
   return (
@@ -361,7 +484,7 @@ const EditInfo = ({
                 slug === "" ? "!border-red-500 !outline-red-500" : ""
               }`}
               value={slug}
-              onChange={(event) => setSlug(event.target.value)}
+              onChange={(event) => handleChangeSlug(event.target.value)}
               maxlength="100"
             />
           </div>

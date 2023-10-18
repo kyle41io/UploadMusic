@@ -8,6 +8,7 @@ export const FileProvider = ({ children }) => {
   const [artistFile, setArtistFile] = useState(null);
   const [durationFile, setDurationFile] = useState(null);
   const [genreFile, setGenreFile] = useState(null);
+  const [slugFile, setSlugFile] = useState(null);
   const [uploadedImageFile, setUploadedImageFile] = useState(null);
 
   return (
@@ -25,6 +26,8 @@ export const FileProvider = ({ children }) => {
         setGenreFile,
         uploadedImageFile,
         setUploadedImageFile,
+        slugFile,
+        setSlugFile,
       }}
     >
       {children}
