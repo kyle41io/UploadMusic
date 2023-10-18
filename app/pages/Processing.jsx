@@ -18,11 +18,10 @@ const Processing = ({ setShowUpload }) => {
 
   useEffect(() => {
     const storage = getStorage();
-    const storageRef = ref(storage, `/files/${slugFile}/${titleFile}`);
+    const storageRef = ref(storage, `/files/${slugFile}/${titleFile}.mp3`);
 
     uploadBytes(storageRef, uploadedFile)
       .then((snapshot) => {
-        // Audio file uploaded successfully, get download URL
         getDownloadURL(snapshot.ref)
           .then((url) => {
             setAudioURL(url);
@@ -41,6 +40,10 @@ const Processing = ({ setShowUpload }) => {
     linkInput.select();
     document.execCommand("copy");
     setCopySuccess(true);
+
+    setTimeout(() => {
+      setCopySuccess(false);
+    }, 2000);
   };
 
   const handleAction = () => {
@@ -91,9 +94,9 @@ const Processing = ({ setShowUpload }) => {
                 </span>
               </div>
               {copySuccess && (
-                <p className="text-green-600 text-xs absolute bottom-0 left-0 ml-2 mb-1">
+                <div className="bg-green-500/80 text-slate-500 text-xs absolute p-1 -bottom-8 left-0 ml-2 mb-1 rounded-md">
                   Copied to clipboard!
-                </p>
+                </div>
               )}
             </div>
           </div>
