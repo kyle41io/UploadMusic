@@ -15,10 +15,14 @@ const Processing = ({ setShowUpload }) => {
   const { genreFile } = useContext(FileContext);
   const { slugFile } = useContext(FileContext);
   const { uploadedImageFile } = useContext(FileContext);
+  const fileType = uploadedFile?.name?.split(".").pop();
 
   useEffect(() => {
     const storage = getStorage();
-    const storageRef = ref(storage, `/files/${slugFile}/${titleFile}.mp3`);
+    const storageRef = ref(
+      storage,
+      `/files/${slugFile}/${titleFile}.${fileType}`
+    );
 
     uploadBytes(storageRef, uploadedFile)
       .then((snapshot) => {
@@ -33,7 +37,7 @@ const Processing = ({ setShowUpload }) => {
       .catch((error) => {
         console.log(error);
       });
-  }, [uploadedFile, slugFile, titleFile]);
+  }, [uploadedFile, slugFile, titleFile, fileType]);
 
   const handleCopyLink = () => {
     const linkInput = document.getElementById("link-input");
@@ -47,7 +51,7 @@ const Processing = ({ setShowUpload }) => {
   };
 
   const handleAction = () => {
-    setShowUpload(true);
+    window.location.reload();
   };
 
   return (
@@ -60,7 +64,7 @@ const Processing = ({ setShowUpload }) => {
           className="rounded-md"
           alt=""
         />
-        <div className="flex flex-col gap-2">
+        <div className="flex w-[410px] flex-col gap-2">
           <h2 className="text-[#0F0F0F] font-semibold text-base">
             Congratulation, you’ve uploaded successfully !
           </h2>
@@ -71,7 +75,7 @@ const Processing = ({ setShowUpload }) => {
           <div className="flex gap-4 text-xs text-[#979797]">
             <p>{durationFile}</p> <p>{genreFile}</p>
           </div>
-          <div className="flex flex-col gap-[2px]">
+          <div className=" w-full flex flex-col gap-[2px]">
             <label className="text-[#979797] text-xs" htmlFor="link">
               Link
             </label>
@@ -81,7 +85,7 @@ const Processing = ({ setShowUpload }) => {
                 name="link"
                 type="text"
                 placeholder={audioURL ? "" : "loading..."}
-                className="bg-slate-100/50 w-full text-blue-600 p-2 text-sm h-7"
+                className="bg-slate-100/50 w-full text-blue-600 p-2 pr-10 text-xs h-7"
                 value={audioURL}
                 readOnly
               />

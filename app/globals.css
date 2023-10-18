@@ -71,7 +71,7 @@ textarea {
 
 .toast-container {
   position: fixed;
-  bottom: 40px;
+  bottom: 60px;
   right: 40px;
   transform: translateX(100%);
   transition: transform 0.5s ease-in-out;

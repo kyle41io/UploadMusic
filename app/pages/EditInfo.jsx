@@ -31,6 +31,7 @@ const EditInfo = ({
   const [uploadedImage, setUploadedImage] = useState(null);
   const [uploadedImageURL, setUploadedImageURL] = useState(null);
   const [fileDuration, setFileDuration] = useState(null);
+  const [errorImage, setErrorImage] = useState(false);
 
   const audioRef = useRef();
 
@@ -46,6 +47,7 @@ const EditInfo = ({
       });
       audioElement.src = URL.createObjectURL(uploadedFile);
     }
+    console.log(URL.createObjectURL(uploadedFile));
   }, [uploadedFile, setDurationFile]);
 
   const fileName = uploadedFile?.name?.split(".").slice(0, -1).join(".");
@@ -92,28 +94,23 @@ const EditInfo = ({
   };
 
   const handleImageUpload = (event) => {
-    const file = event.target.files[0];
+    const fileSizeInBytes = file.size;
+    const maxFileSize = 5 * 1024 * 1024;
+
+    if (fileSizeInBytes > maxFileSize) {
+      setErrorImage(true);
+
+      const timeout = setTimeout(() => {
+        setErrorImage(false);
+      }, 3000);
+      return () => clearTimeout(timeout);
+    }
+
     const imageUrl = URL.createObjectURL(file);
     setUploadedImage(file);
     setUploadedImageFile(imageUrl);
     setUploadedImageURL(imageUrl);
   };
-
-  // const fileInfo = {
-  //   title: title,
-  //   duration: formatTime(fileDuration),
-  //   size: formatSize(fileSize),
-  //   type: fileType,
-  //   slug: slug,
-  //   genre: genre,
-  //   artist: artist,
-  //   description: description,
-  // };
-
-  // const audioInfoJSON = JSON.stringify(fileInfo);
-  // const audioInfoFile = new File([audioInfoJSON], "audio_info.json", {
-  //   type: "application/json",
-  // });
 
   const handleUpload = async () => {
     if (!title || !slug) {
@@ -129,17 +126,27 @@ const EditInfo = ({
     const storage = getStorage();
     const firestore = getFirestore();
 
-    const newFileName = `${title}.mp3`; // Tên file mới bạn muốn đặt
+    // const newFileName = `${title}.${fileType}`; // Tên file mới bạn muốn đặt
+    // // Tạo Blob mới với tên file mới
+    // const modifiedMp3File = new File([uploadedFile], newFileName, {
+    //   type: fileType,
+    //   name: newFileName,
+    // });
+    // // Lấy tham chiếu đến thư mục hoặc đường dẫn trên Firebase Storage
+    // // Tạo tham chiếu đến file trên Firebase Storage với tên file mới
+    // const mp3FileRef = ref(storage, `/files/${slug}/${newFileName}`);
+    // // Upload file đã sửa tên lên Firebase Storage
+    const newFileName = `${title}.${fileType}`; // Tên file mới bạn muốn đặt
     // Tạo Blob mới với tên file mới
-    const modifiedMp3File = new File([uploadedFile], newFileName, {
+    const modifiedMp3File = new Blob([uploadedFile], {
       type: uploadedFile.type,
-      lastModified: Date.now() - 86400000,
-      name: newFileName,
     });
+    // modifiedMp3File.lastModifiedDate = new Date() - 86400000;
+    modifiedMp3File.name = newFileName;
     // Lấy tham chiếu đến thư mục hoặc đường dẫn trên Firebase Storage
+    //const storageRef = storage.ref();
     // Tạo tham chiếu đến file trên Firebase Storage với tên file mới
     const mp3FileRef = ref(storage, `/files/${slug}/${newFileName}`);
-    // Upload file đã sửa tên lên Firebase Storage
     const uploadTask = uploadBytesResumable(mp3FileRef, modifiedMp3File);
 
     uploadTask.on(
@@ -209,30 +216,42 @@ const EditInfo = ({
   return (
     <div className="flex flex-col justify-center items-center h-[440px] w-[645px] p-6 gap-3 rounded-md border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]">
       <div className="flex gap-6">
-        <div
-          className="h-[200px] w-[200px] bg-primary/60 flex flex-col justify-end items-center rounded-lg bg-cover"
-          style={{
-            backgroundImage: uploadedImageURL
-              ? `url(${uploadedImageURL})`
-              : "url(/Music-Club.jpeg)",
-          }}
-        >
-          <input
-            id="image"
-            type="file"
-            accept=".jpg,.png"
-            className="hidden"
-            onChange={handleImageUpload}
-            maxFileSize={5 * 1024 * 1024}
-          />
-          <label
-            className="flex gap-1 justify-center items-center w-28 h-6 text-xs bg-white p-1 rounded-md mb-4 hover:opacity-80 cursor-pointer"
-            htmlFor="image"
+        <div className="">
+          <div
+            className={`h-[200px] w-[200px] bg-primary/60 flex flex-col justify-end items-center rounded-lg bg-cover ${
+              errorImage ? "border-2 border-red-400" : ""
+            }`}
+            style={{
+              backgroundImage: uploadedImageURL
+                ? `url(${uploadedImageURL})`
+                : "url(/Music-Club.jpeg)",
+            }}
           >
-            <CameraIcon />
-            Upload Image
-          </label>
+            <input
+              id="image"
+              type="file"
+              accept=".jpg,.png"
+              className="hidden"
+              onChange={(event) => handleImageUpload(event.target.files[0])}
+              maxfilesize={5 * 1024 * 1024}
+            />
+            <label
+              className="flex gap-1 justify-center items-center w-28 h-6 text-xs bg-white p-1 rounded-md mb-4 hover:opacity-80 cursor-pointer"
+              htmlFor="image"
+            >
+              <CameraIcon />
+              Upload Image
+            </label>
+          </div>
+          {errorImage ? (
+            <p className="text-red-400 text-xs">
+              Invalid image. Type must be PNG or JPG and max size is 5MB
+            </p>
+          ) : (
+            ""
+          )}
         </div>
+
         <audio ref={audioRef} className="audio-element"></audio>
         <div className="flex flex-col h-[346px] w-[373px] gap-4 items-center justify-center text-xs">
           <div className="w-full gap-1">
@@ -322,7 +341,7 @@ const EditInfo = ({
               rows="10"
               className="h-20"
               onChange={(event) => setDescription(event.target.value)}
-              maxLength="500"
+              maxlength="500"
             ></textarea>
           </div>
         </div>

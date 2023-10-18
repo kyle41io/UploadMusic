@@ -7,7 +7,6 @@ import Processing from "./pages/Processing";
 import { FileProvider } from "@/app/utils";
 import Success from "./components/Success";
 import Error from "./components/Error";
-import SuccessTickIcon from "./assets/icons/SuccessTickIcon";
 
 export default function Home() {
   const [showUpload, setShowUpload] = useState(true);

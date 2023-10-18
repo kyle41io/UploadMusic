@@ -5,16 +5,21 @@ import FileContext from "@/app/utils";
 const Upload = ({ setShowEdit, setShowUpload }) => {
   const [dragging, setDragging] = useState(false);
   const { setUploadedFile } = useContext(FileContext);
+  const [error, setError] = useState(false);
 
   function checkAudioType(file) {
     if (file.type.match("audio.*")) return true;
   }
 
   const handleFileChange = (file) => {
-    if (!checkAudioType(file)) {
-      return alert(
-        "Unsupported file type. Only mp3 and wav files are allowed."
-      );
+    const fileSizeInBytes = file.size;
+    const maxFileSize = 100 * 1024 * 1024;
+    if (!checkAudioType(file) || fileSizeInBytes > maxFileSize) {
+      setError(true);
+      const timeout = setTimeout(() => {
+        setError(false);
+      }, 3000);
+      return () => clearTimeout(timeout);
     }
 
     setUploadedFile(file);
@@ -51,7 +56,9 @@ const Upload = ({ setShowEdit, setShowUpload }) => {
           dragging
             ? "border-primary/75 border-4 border-dashed"
             : "border-[#DCDCDC]"
-        } shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]`}
+        } shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)] ${
+          error ? "border-2 border-red-400" : ""
+        }`}
       >
         <input
           id="file"
@@ -59,7 +66,7 @@ const Upload = ({ setShowEdit, setShowUpload }) => {
           className="hidden"
           accept=".mp3,.wav"
           onChange={(event) => handleFileChange(event.target.files[0])}
-          maxFileSize={100 * 1024 * 1024}
+          maxfilesize={100 * 1024 * 1024}
         />
         <h2 className="text-[#0F0F0F] h-[67px] text-2xl font-medium">
           Drag & Drop your track here
@@ -76,6 +83,14 @@ const Upload = ({ setShowEdit, setShowUpload }) => {
           <p>Max size: 100mb</p>
         </div>
       </div>
+      {error ? (
+        <p className="text-red-400 text-xs">
+          Your uploaded file is invalid. Type must be mp3 or wav and the max
+          size is 100mb
+        </p>
+      ) : (
+        ""
+      )}
     </div>
   );
 };
