@@ -113,79 +113,79 @@ const EditInfo = ({
     setUploadedImageURL(imageUrl);
   };
 
-  // const handleUpload = async () => {
-  //   if (!title || !slug) {
-  //     setShowErrorToast(true);
-  //     return;
-  //   }
+  const handleUpload = async () => {
+    if (!title || !slug) {
+      setShowErrorToast(true);
+      return;
+    }
 
-  //   if (!uploadedFile) {
-  //     alert("Please upload an audio file first!");
-  //     return;
-  //   }
+    if (!uploadedFile) {
+      alert("Please upload an audio file first!");
+      return;
+    }
 
-  //   const storage = getStorage();
-  //   const firestore = getFirestore();
+    const storage = getStorage();
+    const firestore = getFirestore();
 
-  //   const newFileName = `${title}.${fileType}`; // Tên file mới bạn muốn đặt
-  //   // Tạo Blob mới với tên file mới
-  //   const modifiedMp3File = new Blob([uploadedFile], {
-  //     type: uploadedFile.type,
-  //   });
-  //   // modifiedMp3File.lastModifiedDate = new Date() - 86400000;
-  //   modifiedMp3File.name = newFileName;
-  //   // Tạo tham chiếu đến file trên Firebase Storage với tên file mới
-  //   const mp3FileRef = ref(storage, `/files/${slug}/${newFileName}`);
-  //   const uploadTask = uploadBytesResumable(mp3FileRef, modifiedMp3File);
+    const newFileName = `${title}.${fileType}`; // Tên file mới bạn muốn đặt
+    // Tạo Blob mới với tên file mới
+    const modifiedMp3File = new Blob([uploadedFile], {
+      type: uploadedFile.type,
+    });
+    // modifiedMp3File.lastModifiedDate = new Date() - 86400000;
+    modifiedMp3File.name = newFileName;
+    // Tạo tham chiếu đến file trên Firebase Storage với tên file mới
+    const mp3FileRef = ref(storage, `/files/${slug}/${newFileName}`);
+    const uploadTask = uploadBytesResumable(mp3FileRef, modifiedMp3File);
 
-  //   uploadTask.on(
-  //     "state_changed",
-  //     (snapshot) => {
-  //       const percent = Math.round(
-  //         (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-  //       );
-  //       setPercent(percent);
-  //       if (percent === 100) {
-  //         setShowEdit(false);
-  //         setShowProcessing(true);
-  //         setShowSuccessToast(true);
-  //       }
-  //     },
-  //     (error) => {
-  //       console.log(error);
-  //       // Handle upload error
-  //     },
-  //     async () => {
-  //       // Audio file uploaded successfully, get download URL
-  //       const audioDownloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const percent = Math.round(
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+        );
+        setPercent(percent);
+        if (percent === 100) {
+          setShowEdit(false);
+          setShowProcessing(true);
+          setShowSuccessToast(true);
+        }
+      },
+      (error) => {
+        console.log(error);
+        // Handle upload error
+      },
+      async () => {
+        // Audio file uploaded successfully, get download URL
+        const audioDownloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
-  //       if (uploadedImage) {
-  //         const imageFileRef = ref(
-  //           storage,
-  //           `/files/${slug}/${uploadedImage.name}`
-  //         );
-  //         const imageUploadTask = uploadBytesResumable(
-  //           imageFileRef,
-  //           uploadedImage
-  //         );
+        if (uploadedImage) {
+          const imageFileRef = ref(
+            storage,
+            `/files/${slug}/${uploadedImage.name}`
+          );
+          const imageUploadTask = uploadBytesResumable(
+            imageFileRef,
+            uploadedImage
+          );
 
-  //         imageUploadTask.on(
-  //           "state_changed",
-  //           (snapshot) => {},
-  //           (error) => {
-  //             console.log(error);
-  //             // Handle upload error
-  //           },
-  //           async () => {
-  //             const imageDownloadURL = await getDownloadURL(
-  //               imageUploadTask.snapshot.ref
-  //             );
-  //           }
-  //         );
-  //       }
-  //     }
-  //   );
-  // };
+          imageUploadTask.on(
+            "state_changed",
+            (snapshot) => {},
+            (error) => {
+              console.log(error);
+              // Handle upload error
+            },
+            async () => {
+              const imageDownloadURL = await getDownloadURL(
+                imageUploadTask.snapshot.ref
+              );
+            }
+          );
+        }
+      }
+    );
+  };
 
   // const handleUpload = async () => {
   //   if (!title || !slug) {
@@ -308,99 +308,99 @@ const EditInfo = ({
   //     });
   // };
 
-  const handleUpload = async () => {
-    if (!title || !slug) {
-      setShowErrorToast(true);
-      return;
-    }
+  // const handleUpload = async () => {
+  //   if (!title || !slug) {
+  //     setShowErrorToast(true);
+  //     return;
+  //   }
 
-    if (!uploadedFile) {
-      alert("Please upload an audio file first!");
-      return;
-    }
+  //   if (!uploadedFile) {
+  //     alert("Please upload an audio file first!");
+  //     return;
+  //   }
 
-    const storage = getStorage();
-    const firestore = getFirestore();
+  //   const storage = getStorage();
+  //   const firestore = getFirestore();
 
-    const newFileName = `${title}.${fileType}`; // Tên file mới bạn muốn đặt
-    const modifiedMp3File = new Blob([uploadedFile], {
-      type: uploadedFile.type,
-    });
-    modifiedMp3File.name = newFileName;
+  //   const newFileName = `${title}.${fileType}`; // Tên file mới bạn muốn đặt
+  //   const modifiedMp3File = new Blob([uploadedFile], {
+  //     type: uploadedFile.type,
+  //   });
+  //   modifiedMp3File.name = newFileName;
 
-    // Modify ID3 tags
-    const fileReader = new FileReader();
-    fileReader.onload = function () {
-      const arrayBuffer = this.result;
-      const tags = {
-        title: title,
-        genre: genre,
-        artist: artist,
-      };
-      const updatedArrayBuffer = id3.update(tags, arrayBuffer);
-      const updatedFile = new Blob([updatedArrayBuffer], {
-        type: uploadedFile.type,
-      });
-      updatedFile.name = newFileName;
+  //   // Modify ID3 tags
+  //   const fileReader = new FileReader();
+  //   fileReader.onload = function () {
+  //     const arrayBuffer = this.result;
+  //     const tags = {
+  //       title: title,
+  //       genre: genre,
+  //       artist: artist,
+  //     };
+  //     const updatedArrayBuffer = id3.update(tags, arrayBuffer);
+  //     const updatedFile = new Blob([updatedArrayBuffer], {
+  //       type: uploadedFile.type,
+  //     });
+  //     updatedFile.name = newFileName;
 
-      // Upload the modified file
-      const mp3FileRef = ref(storage, `/files/${slug}/${newFileName}`);
-      const uploadTask = uploadBytesResumable(mp3FileRef, updatedFile);
+  //     // Upload the modified file
+  //     const mp3FileRef = ref(storage, `/files/${slug}/${newFileName}`);
+  //     const uploadTask = uploadBytesResumable(mp3FileRef, updatedFile);
 
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const percent = Math.round(
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-          );
-          setPercent(percent);
-          if (percent === 100) {
-            setShowEdit(false);
-            setShowProcessing(true);
-            setShowSuccessToast(true);
-          }
-        },
-        (error) => {
-          console.log(error);
-          // Handle upload error
-        },
-        async () => {
-          // Audio file uploaded successfully, get download URL
-          const audioDownloadURL = await getDownloadURL(
-            uploadTask.snapshot.ref
-          );
+  //     uploadTask.on(
+  //       "state_changed",
+  //       (snapshot) => {
+  //         const percent = Math.round(
+  //           (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+  //         );
+  //         setPercent(percent);
+  //         if (percent === 100) {
+  //           setShowEdit(false);
+  //           setShowProcessing(true);
+  //           setShowSuccessToast(true);
+  //         }
+  //       },
+  //       (error) => {
+  //         console.log(error);
+  //         // Handle upload error
+  //       },
+  //       async () => {
+  //         // Audio file uploaded successfully, get download URL
+  //         const audioDownloadURL = await getDownloadURL(
+  //           uploadTask.snapshot.ref
+  //         );
 
-          if (uploadedImage) {
-            const imageFileRef = ref(
-              storage,
-              `/files/${slug}/${uploadedImage.name}`
-            );
-            const imageUploadTask = uploadBytesResumable(
-              imageFileRef,
-              uploadedImage
-            );
+  //         if (uploadedImage) {
+  //           const imageFileRef = ref(
+  //             storage,
+  //             `/files/${slug}/${uploadedImage.name}`
+  //           );
+  //           const imageUploadTask = uploadBytesResumable(
+  //             imageFileRef,
+  //             uploadedImage
+  //           );
 
-            imageUploadTask.on(
-              "state_changed",
-              (snapshot) => {},
-              (error) => {
-                console.log(error);
-                // Handle upload error
-              },
-              async () => {
-                const imageDownloadURL = await getDownloadURL(
-                  imageUploadTask.snapshot.ref
-                );
-              }
-            );
-          }
-        }
-      );
-    };
+  //           imageUploadTask.on(
+  //             "state_changed",
+  //             (snapshot) => {},
+  //             (error) => {
+  //               console.log(error);
+  //               // Handle upload error
+  //             },
+  //             async () => {
+  //               const imageDownloadURL = await getDownloadURL(
+  //                 imageUploadTask.snapshot.ref
+  //               );
+  //             }
+  //           );
+  //         }
+  //       }
+  //     );
+  //   };
 
-    // Read the uploaded file as an ArrayBuffer
-    fileReader.readAsArrayBuffer(modifiedMp3File);
-  };
+  //   // Read the uploaded file as an ArrayBuffer
+  //   fileReader.readAsArrayBuffer(modifiedMp3File);
+  // };
 
   const handleChangeTitle = (title) => {
     setTitle(title);
