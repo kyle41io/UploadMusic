@@ -1,15 +1,13 @@
 "use client";
 import React, { useContext, useState, useRef, useEffect } from "react";
 import FileContext from "@/app/utils";
-import storage from "@/firebaseConfig.js";
 import {
   getStorage,
   ref,
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
-import { getFirestore } from "firebase/firestore";
-import * as id3 from "node-id3";
+import storage from "@/app/utils/firebaseConfig";
 import LoadingIcon from "../assets/icons/LoadingIcon";
 import CameraIcon from "../assets/icons/CameraIcon";
 import RequiredIcon from "../assets/icons/RequiredIcon";
@@ -18,24 +16,28 @@ const EditInfo = ({
   setShowUpload,
   setShowProcessing,
   setShowEdit,
-  setShowSuccessToast,
-  setShowErrorToast,
+  setShowToast,
+  setError,
 }) => {
   const { uploadedFile } = useContext(FileContext);
-  const { setTitleFile } = useContext(FileContext);
-  const { setArtistFile } = useContext(FileContext);
-  const { setDurationFile } = useContext(FileContext);
-  const { setGenreFile } = useContext(FileContext);
-  const { setSlugFile } = useContext(FileContext);
+  const { setInfoFile } = useContext(FileContext);
   const { setUploadedImageFile } = useContext(FileContext);
-
   const [uploadedImage, setUploadedImage] = useState(null);
   const [uploadedImageURL, setUploadedImageURL] = useState(null);
   const [fileDuration, setFileDuration] = useState(null);
-  const [errorImage, setErrorImage] = useState(false);
+  const [errorImage, setErrorImage] = useState(null);
+  const [percent, setPercent] = useState(0);
+
+  const fileName = uploadedFile?.name?.split(".").slice(0, -1).join(".");
+  const fileSize = uploadedFile?.size;
+  const fileType = uploadedFile?.name?.split(".").pop();
+  const [title, setTitle] = useState(fileName || "");
+  const [slug, setSlug] = useState(slugify(fileName || ""));
+  const [genre, setGenre] = useState("none");
+  const [artist, setArtist] = useState("N/A");
+  const [description, setDescription] = useState("");
 
   const audioRef = useRef();
-
   useEffect(() => {
     if (uploadedFile) {
       audioRef.current.src = URL.createObjectURL(uploadedFile);
@@ -44,25 +46,23 @@ const EditInfo = ({
         const duration = audioElement.duration;
 
         setFileDuration(duration);
-        setDurationFile(formatTime(duration));
+        setInfoFile((prevInfoFile) => ({
+          ...prevInfoFile,
+          duration: formatTime(duration),
+        }));
       });
       audioElement.src = URL.createObjectURL(uploadedFile);
     }
-    console.log(URL.createObjectURL(uploadedFile));
-  }, [uploadedFile, setDurationFile]);
+  }, [uploadedFile, setInfoFile]);
 
-  const fileName = uploadedFile?.name?.split(".").slice(0, -1).join(".");
-  const fileSize = uploadedFile?.size;
-  const fileType = uploadedFile?.name?.split(".").pop();
+  useEffect(() => {
+    setInfoFile((prevInfoFile) => ({
+      ...prevInfoFile,
+      title: title,
+      slug: slug,
+    }));
+  }, [title, slug, setInfoFile]);
 
-  const [title, setTitle] = useState(fileName || "");
-  const [slug, setSlug] = useState(slugify(fileName || ""));
-  const [genre, setGenre] = useState("none");
-  const [artist, setArtist] = useState("N/A");
-  const [description, setDescription] = useState("");
-  const [percent, setPercent] = useState(0);
-  setTitleFile(title);
-  setSlugFile(slug);
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
@@ -100,22 +100,60 @@ const EditInfo = ({
 
     if (fileSizeInBytes > maxFileSize) {
       setErrorImage(true);
-
-      const timeout = setTimeout(() => {
-        setErrorImage(false);
-      }, 3000);
-      return () => clearTimeout(timeout);
     }
-
     const imageUrl = URL.createObjectURL(file);
     setUploadedImage(file);
     setUploadedImageFile(imageUrl);
     setUploadedImageURL(imageUrl);
   };
 
+  const checkFileExists = async (fileRef) => {
+    try {
+      await getDownloadURL(fileRef);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  // const generateUniqueFileName = async (fileRef, fileName) => {
+  //   let suffix = 0;
+  //   let newFileName = fileName;
+
+  //   while (await checkFileExists(`${fileRef}/${newFileName}`)) {
+  //     suffix++;
+  //     const fileExtension = fileName.split(".").pop();
+  //     const baseName = fileName.split(".").slice(0, -1).join(".");
+  //     newFileName = `${baseName} (${suffix}).${fileExtension}`;
+  //     fileRef = ref(storage, `files/${slug}/${newFileName}`);
+  //   }
+
+  //   return newFileName;
+  // };
+
+  const generateUniqueFileName = async (fileRef, fileName) => {
+    let newFileName = fileName;
+    let suffix = 0;
+
+    while (true) {
+      const exists = await checkFileExists(`${fileRef}/${newFileName}`);
+      if (!exists) {
+        break;
+      }
+
+      suffix++;
+      const fileExtension = fileName.split(".").pop();
+      const baseFileName = fileName.split(".").slice(0, -1).join(".");
+      newFileName = `${baseFileName} (${suffix}).${fileExtension}`;
+    }
+
+    return newFileName;
+  };
+
   const handleUpload = async () => {
     if (!title || !slug) {
-      setShowErrorToast(true);
+      setShowToast(true);
+      setError(true);
       return;
     }
 
@@ -123,18 +161,20 @@ const EditInfo = ({
       alert("Please upload an audio file first!");
       return;
     }
-
+    setPercent(1);
     const storage = getStorage();
-    const firestore = getFirestore();
 
-    const newFileName = `${title}.${fileType}`; // Tên file mới bạn muốn đặt
+    const newFileName = await generateUniqueFileName(
+      ref(storage, `files/${slug}`),
+      `${title}.${fileType}`
+    );
+    // const newFileName = `${title}.${fileType}`;
     // Tạo Blob mới với tên file mới
     const modifiedMp3File = new Blob([uploadedFile], {
       type: uploadedFile.type,
     });
-    // modifiedMp3File.lastModifiedDate = new Date() - 86400000;
     modifiedMp3File.name = newFileName;
-    // Tạo tham chiếu đến file trên Firebase Storage với tên file mới
+    // Tạo tham chiếu đến file trên Firebase Storage
     const mp3FileRef = ref(storage, `/files/${slug}/${newFileName}`);
     const uploadTask = uploadBytesResumable(mp3FileRef, modifiedMp3File);
 
@@ -144,11 +184,12 @@ const EditInfo = ({
         const percent = Math.round(
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100
         );
-        setPercent(percent);
         if (percent === 100) {
+          setPercent(100);
           setShowEdit(false);
           setShowProcessing(true);
-          setShowSuccessToast(true);
+          setShowToast(true);
+          setError(false);
         }
       },
       (error) => {
@@ -156,9 +197,6 @@ const EditInfo = ({
         // Handle upload error
       },
       async () => {
-        // Audio file uploaded successfully, get download URL
-        const audioDownloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-
         if (uploadedImage) {
           const imageFileRef = ref(
             storage,
@@ -175,11 +213,6 @@ const EditInfo = ({
             (error) => {
               console.log(error);
               // Handle upload error
-            },
-            async () => {
-              const imageDownloadURL = await getDownloadURL(
-                imageUploadTask.snapshot.ref
-              );
             }
           );
         }
@@ -187,231 +220,22 @@ const EditInfo = ({
     );
   };
 
-  // const handleUpload = async () => {
-  //   if (!title || !slug) {
-  //     setShowErrorToast(true);
-  //     return;
-  //   }
-
-  //   if (!uploadedFile) {
-  //     alert("Please upload an audio file first!");
-  //     return;
-  //   }
-
-  //   const storage = getStorage();
-  //   const firestore = getFirestore();
-
-  //   const newFileName = `${title}.${fileType}`; // Tên file mới bạn muốn đặt
-  //   // Tạo Blob mới với tên file mới
-  //   const modifiedMp3File = new Blob([uploadedFile], {
-  //     type: uploadedFile.type,
-  //   });
-  //   // modifiedMp3File.lastModifiedDate = new Date() - 86400000;
-  //   modifiedMp3File.name = newFileName;
-
-  //   // Change ID3 tags
-  //   fetch(modifiedMp3File)
-  //     .then((response) => response.blob())
-  //     .then((blob) => {
-  //       // Tạo một FileReader để đọc dữ liệu từ Blob
-  //       const reader = new FileReader();
-  //       reader.onloadend = function () {
-  //         // Chuyển đổi ArrayBuffer thành Uint8Array để chỉnh sửa dữ liệu
-  //         const uint8Array = new Uint8Array(reader.result);
-
-  //         // Tìm vị trí (offset) của chuỗi artist trong tệp MP3
-  //         const artistString = "TPE1"; // Chuỗi này là mã tag cho artist trong ID3 metadata
-  //         const artistIndex = Array.prototype.indexOf.call(
-  //           uint8Array,
-  //           artistString.charCodeAt(0)
-  //         );
-
-  //         // Kiểm tra xem đã tìm thấy tag artist chưa
-  //         if (artistIndex !== -1) {
-  //           // Đổi tên artist thành "New Artist Name"
-  //           const newArtistName = artist;
-  //           const artistNameArray = new TextEncoder().encode(newArtistName);
-
-  //           // Ghi đè dữ liệu trong tệp MP3 bằng tên mới của nghệ sĩ
-  //           for (let i = 0; i < artistNameArray.length; i++) {
-  //             uint8Array[artistIndex + 4 + i] = artistNameArray[i];
-  //           }
-
-  //           // Ghi dữ liệu đã được chỉnh sửa vào tệp MP3
-  //           const modifiedBlob = new Blob([uint8Array], { type: "audio/mpeg" });
-
-  //           // Tạo tham chiếu đến file trên Firebase Storage với tên file mới
-  //           const mp3FileRef = ref(storage, `/files/${slug}/${newFileName}`);
-  //           const uploadTask = uploadBytesResumable(mp3FileRef, modifiedBlob);
-
-  //           uploadTask.on(
-  //             "state_changed",
-  //             (snapshot) => {
-  //               const percent = Math.round(
-  //                 (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-  //               );
-  //               setPercent(percent);
-  //               if (percent === 100) {
-  //                 setShowEdit(false);
-  //                 setShowProcessing(true);
-  //                 setShowSuccessToast(true);
-  //               }
-  //             },
-  //             (error) => {
-  //               console.log(error);
-  //               // Handle upload error
-  //             },
-  //             async () => {
-  //               // Audio file uploaded successfully, get download URL
-  //               const audioDownloadURL = await getDownloadURL(
-  //                 uploadTask.snapshot.ref
-  //               );
-
-  //               if (uploadedImage) {
-  //                 const imageFileRef = ref(
-  //                   storage,
-  //                   `/files/${slug}/${uploadedImage.name}`
-  //                 );
-  //                 const imageUploadTask = uploadBytesResumable(
-  //                   imageFileRef,
-  //                   uploadedImage
-  //                 );
-
-  //                 imageUploadTask.on(
-  //                   "state_changed",
-  //                   (snapshot) => {},
-  //                   (error) => {
-  //                     console.log(error);
-  //                     // Handle upload error
-  //                   },
-  //                   async () => {
-  //                     const imageDownloadURL = await getDownloadURL(
-  //                       imageUploadTask.snapshot.ref
-  //                     );
-  //                   }
-  //                 );
-  //               }
-  //             }
-  //           );
-
-  //           console.log(`Tên nghệ sĩ đã được thay đổi thành ${artist}.`);
-  //         } else {
-  //           console.error("Không tìm thấy tag artist trong tệp MP3.");
-  //         }
-  //       };
-
-  //       // Đọc dữ liệu từ Blob
-  //       reader.readAsArrayBuffer(blob);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Lỗi:", error);
-  //     });
-  // };
-
-  // const handleUpload = async () => {
-  //   if (!title || !slug) {
-  //     setShowErrorToast(true);
-  //     return;
-  //   }
-
-  //   if (!uploadedFile) {
-  //     alert("Please upload an audio file first!");
-  //     return;
-  //   }
-
-  //   const storage = getStorage();
-  //   const firestore = getFirestore();
-
-  //   const newFileName = `${title}.${fileType}`; // Tên file mới bạn muốn đặt
-  //   const modifiedMp3File = new Blob([uploadedFile], {
-  //     type: uploadedFile.type,
-  //   });
-  //   modifiedMp3File.name = newFileName;
-
-  //   // Modify ID3 tags
-  //   const fileReader = new FileReader();
-  //   fileReader.onload = function () {
-  //     const arrayBuffer = this.result;
-  //     const tags = {
-  //       title: title,
-  //       genre: genre,
-  //       artist: artist,
-  //     };
-  //     const updatedArrayBuffer = id3.update(tags, arrayBuffer);
-  //     const updatedFile = new Blob([updatedArrayBuffer], {
-  //       type: uploadedFile.type,
-  //     });
-  //     updatedFile.name = newFileName;
-
-  //     // Upload the modified file
-  //     const mp3FileRef = ref(storage, `/files/${slug}/${newFileName}`);
-  //     const uploadTask = uploadBytesResumable(mp3FileRef, updatedFile);
-
-  //     uploadTask.on(
-  //       "state_changed",
-  //       (snapshot) => {
-  //         const percent = Math.round(
-  //           (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-  //         );
-  //         setPercent(percent);
-  //         if (percent === 100) {
-  //           setShowEdit(false);
-  //           setShowProcessing(true);
-  //           setShowSuccessToast(true);
-  //         }
-  //       },
-  //       (error) => {
-  //         console.log(error);
-  //         // Handle upload error
-  //       },
-  //       async () => {
-  //         // Audio file uploaded successfully, get download URL
-  //         const audioDownloadURL = await getDownloadURL(
-  //           uploadTask.snapshot.ref
-  //         );
-
-  //         if (uploadedImage) {
-  //           const imageFileRef = ref(
-  //             storage,
-  //             `/files/${slug}/${uploadedImage.name}`
-  //           );
-  //           const imageUploadTask = uploadBytesResumable(
-  //             imageFileRef,
-  //             uploadedImage
-  //           );
-
-  //           imageUploadTask.on(
-  //             "state_changed",
-  //             (snapshot) => {},
-  //             (error) => {
-  //               console.log(error);
-  //               // Handle upload error
-  //             },
-  //             async () => {
-  //               const imageDownloadURL = await getDownloadURL(
-  //                 imageUploadTask.snapshot.ref
-  //               );
-  //             }
-  //           );
-  //         }
-  //       }
-  //     );
-  //   };
-
-  //   // Read the uploaded file as an ArrayBuffer
-  //   fileReader.readAsArrayBuffer(modifiedMp3File);
-  // };
-
   const handleChangeTitle = (title) => {
     setTitle(title);
   };
   const handleChangeArtist = (artist) => {
     setArtist(artist);
-    setArtistFile(artist);
+    setInfoFile((prevInfoFile) => ({
+      ...prevInfoFile,
+      artist: artist,
+    }));
   };
   const handleChangeGenre = (genre) => {
     setGenre(genre);
-    setGenreFile(genre);
+    setInfoFile((prevInfoFile) => ({
+      ...prevInfoFile,
+      genre: genre,
+    }));
   };
   const handleChangeSlug = (slug) => {
     setSlug(slug);
@@ -419,16 +243,20 @@ const EditInfo = ({
 
   return (
     <div className="flex flex-col justify-center items-center h-[440px] w-[645px] p-6 gap-3 rounded-md border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]">
-      <div className="flex gap-6">
+      <div
+        className={`flex gap-6 ${
+          percent !== 100 && percent !== 0 ? "animate-pulse" : ""
+        }`}
+      >
         <div className="">
           <div
-            className={`h-[200px] w-[200px] bg-primary/60 flex flex-col justify-end items-center rounded-lg bg-cover ${
+            className={`h-[200px] w-[200px] flex flex-col justify-end items-center rounded-lg bg-center bg-cover bg-no-repeat ${
               errorImage ? "border-2 border-red-400" : ""
-            }`}
+            } `}
             style={{
               backgroundImage: uploadedImageURL
                 ? `url(${uploadedImageURL})`
-                : "url(/Music-Club.jpeg)",
+                : "linear-gradient(135deg, #9A8080 0%, #82A8C2 100%)",
             }}
           >
             <input
@@ -473,7 +301,7 @@ const EditInfo = ({
               className={`h-7 w-full ${
                 title === "" ? "!border-red-500 !outline-red-500" : ""
               }`}
-              maxlength="100"
+              maxLength="100"
             />
           </div>
           <div className="flex h-8 w-full gap-1">
@@ -505,7 +333,7 @@ const EditInfo = ({
               }`}
               value={slug}
               onChange={(event) => handleChangeSlug(event.target.value)}
-              maxlength="100"
+              maxLength="100"
             />
           </div>
           <div className="flex gap-4">
@@ -545,7 +373,7 @@ const EditInfo = ({
               rows="10"
               className="h-20"
               onChange={(event) => setDescription(event.target.value)}
-              maxlength="500"
+              maxLength="500"
             ></textarea>
           </div>
         </div>
@@ -565,19 +393,19 @@ const EditInfo = ({
             className="flex items-center justify-center px-2 py-1 w-[55px] h-[25px] bg-primary text-white rounded-md hover:bg-orange-700"
             onClick={handleUpload}
           >
-            {percent === 0 ? (
-              "Save"
-            ) : (
+            {percent !== 0 ? (
               <div className="circle">
                 <LoadingIcon />
               </div>
+            ) : (
+              "Save"
             )}
           </button>
         </div>
       </div>
-      {percent !== 0 && (
+      {/* {percent !== 0 && (
         <p className="text-primary text-xl font-bold">{percent} %</p>
-      )}
+      )} */}
     </div>
   );
 };

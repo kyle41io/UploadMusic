@@ -1,28 +1,19 @@
 "use client";
-import Image from "next/image";
 import React, { useContext, useState, useEffect } from "react";
 import CopyIcon from "../assets/icons/CopyIcon";
 import FileContext from "@/app/utils";
 import { getStorage, ref, getDownloadURL, uploadBytes } from "firebase/storage";
 
-const Processing = ({ setShowUpload }) => {
+const Processing = () => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [audioURL, setAudioURL] = useState("");
-  const { uploadedFile } = useContext(FileContext);
-  const { titleFile } = useContext(FileContext);
-  const { artistFile } = useContext(FileContext);
-  const { durationFile } = useContext(FileContext);
-  const { genreFile } = useContext(FileContext);
-  const { slugFile } = useContext(FileContext);
-  const { uploadedImageFile } = useContext(FileContext);
+  const { infoFile, uploadedImageFile, uploadedFile } = useContext(FileContext);
+  const { title, artist, duration, genre, slug } = infoFile;
   const fileType = uploadedFile?.name?.split(".").pop();
 
   useEffect(() => {
     const storage = getStorage();
-    const storageRef = ref(
-      storage,
-      `/files/${slugFile}/${titleFile}.${fileType}`
-    );
+    const storageRef = ref(storage, `/files/${slug}/${title}.${fileType}`);
 
     uploadBytes(storageRef, uploadedFile)
       .then((snapshot) => {
@@ -37,7 +28,7 @@ const Processing = ({ setShowUpload }) => {
       .catch((error) => {
         console.log(error);
       });
-  }, [uploadedFile, slugFile, titleFile, fileType]);
+  }, [uploadedFile, slug, title, fileType]);
 
   const handleCopyLink = () => {
     const linkInput = document.getElementById("link-input");
@@ -57,23 +48,25 @@ const Processing = ({ setShowUpload }) => {
   return (
     <div className="flex flex-col items-center p-14 gap-6 ">
       <div className="flex justify-start items-center h-[162px] w-[645px] p-10 gap-10 rounded-md border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]">
-        <Image
-          src={uploadedImageFile ? `${uploadedImageFile}` : "/Music-Club.jpeg"}
-          width={130}
-          height={130}
-          className="rounded-md"
+        <div
+          style={{
+            backgroundImage: uploadedImageFile
+              ? `url(${uploadedImageFile})`
+              : "linear-gradient(135deg, #9A8080 0%, #82A8C2 100%)",
+          }}
+          className="rounded-md w-32 h-32 bg-center bg-cover"
           alt=""
         />
+
         <div className="flex w-[410px] flex-col gap-2">
           <h2 className="text-[#0F0F0F] font-semibold text-base">
             Congratulation, you’ve uploaded successfully !
           </h2>
           <div className="flex text-sm gap-1">
-            <p>{titleFile}</p> <span> - </span>{" "}
-            <p>{artistFile ? artistFile : "N/A"}</p>
+            <p>{title}</p> <span> - </span> <p>{artist ? artist : "N/A"}</p>
           </div>
           <div className="flex gap-4 text-xs text-[#979797]">
-            <p>{durationFile}</p> <p>{genreFile}</p>
+            <p>{duration}</p> <p>{genre}</p>
           </div>
           <div className=" w-full flex flex-col gap-[2px]">
             <label className="text-[#979797] text-xs" htmlFor="link">
@@ -124,4 +117,5 @@ const Processing = ({ setShowUpload }) => {
     </div>
   );
 };
+
 export default Processing;

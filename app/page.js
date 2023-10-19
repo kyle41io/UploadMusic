@@ -5,16 +5,15 @@ import Upload from "./pages/Upload";
 import EditInfo from "./pages/EditInfo";
 import Processing from "./pages/Processing";
 import { FileProvider } from "@/app/utils";
-import Success from "./components/Success";
-import Error from "./components/Error";
+import ToastMessage from "./components/ToastMessage";
 
 export default function Home() {
   const [showUpload, setShowUpload] = useState(true);
   const [showEdit, setShowEdit] = useState(false);
   const [showProcessing, setShowProcessing] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
-  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [error, setError] = useState(false);
   const [closingToast, setClosingToast] = useState(false);
 
   useEffect(() => {
@@ -35,19 +34,18 @@ export default function Home() {
 
   useEffect(() => {
     let timeout;
-    if (showSuccessToast || showErrorToast) {
+    if (showToast) {
       timeout = setTimeout(() => {
         handleCloseToast();
       }, 5000);
     }
     return () => clearTimeout(timeout);
-  }, [showSuccessToast, showErrorToast]);
+  }, [showToast]);
 
   const handleCloseToast = () => {
     setClosingToast(true);
     setTimeout(() => {
-      setShowSuccessToast(false);
-      setShowErrorToast(false);
+      setShowToast(false);
       setClosingToast(false);
     }, 500);
   };
@@ -64,19 +62,19 @@ export default function Home() {
             setShowUpload={setShowUpload}
             setShowProcessing={setShowProcessing}
             setShowEdit={setShowEdit}
-            setShowErrorToast={setShowErrorToast}
-            setShowSuccessToast={setShowSuccessToast}
+            setShowToast={setShowToast}
+            setError={setError}
           />
         )}
         {showProcessing && <Processing setShowUpload={setShowUpload} />}
       </FileProvider>
+
       <div
         className={`toast-container ${
-          (showSuccessToast || showErrorToast) && !closingToast ? "show" : ""
+          showToast && !closingToast ? "show" : ""
         } ${closingToast ? "closing" : ""}`}
       >
-        {showSuccessToast && <Success onClose={handleCloseToast} />}
-        {showErrorToast && <Error onClose={handleCloseToast} />}
+        {showToast && <ToastMessage onClose={handleCloseToast} error={error} />}
       </div>
     </main>
   );
