@@ -371,6 +371,9 @@ const EditInfo = ({
         </div>
       </div>
       <div className="w-full flex justify-center gap-28">
+        {percentImage === 100 && (
+          <p className="text-sm text-green-600">Upload Image Done</p>
+        )}
         {percentImage !== 100 && percentImage !== 0 && (
           <div className="flex flex-col justify-center items-center text-primary text-sm font-semibold">
             <div className="">Image</div>
@@ -391,6 +394,9 @@ const EditInfo = ({
               max="100"
             ></progress>
           </div>
+        )}
+        {percentAudio === 100 && (
+          <p className="text-sm text-green-600">Upload Audio Done</p>
         )}
       </div>
     </div>

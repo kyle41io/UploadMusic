@@ -1,7 +1,5 @@
 import React from "react";
-import SuccessTickIcon from "../assets/icons/SuccessTickIcon";
 import XIcon from "../assets/icons/XIcon";
-import ErrorTickIcon from "../assets/icons/ErrorTickIcon";
 import { IconCheck } from "@tabler/icons-react";
 
 const ToastMessage = ({ onClose, error }) => {
