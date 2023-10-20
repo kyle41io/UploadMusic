@@ -20,7 +20,7 @@ const EditInfo = ({
   const [uploadedImage, setUploadedImage] = useState(null);
   const [uploadedImageURL, setUploadedImageURL] = useState(null);
   const [fileDuration, setFileDuration] = useState(null);
-  const [errorImage, setErrorImage] = useState(null);
+  const [errorImage, setErrorImage] = useState(false);
   const [percentAudio, setPercentAudio] = useState(0);
   const [percentImage, setPercentImage] = useState(0);
 
@@ -99,11 +99,14 @@ const EditInfo = ({
 
     if (fileSizeInBytes > maxFileSize) {
       setErrorImage(true);
+      return;
+    } else {
+      setErrorImage(false);
+      const imageUrl = URL.createObjectURL(file);
+      setUploadedImage(file);
+      setUploadedImageFile(imageUrl);
+      setUploadedImageURL(imageUrl);
     }
-    const imageUrl = URL.createObjectURL(file);
-    setUploadedImage(file);
-    setUploadedImageFile(imageUrl);
-    setUploadedImageURL(imageUrl);
   };
 
   const handleUpload = async () => {
@@ -123,8 +126,8 @@ const EditInfo = ({
     const audioFileRef = ref(storage, `/files/${slug}/${newFileName}`);
     const uploadTask = uploadBytesResumable(audioFileRef, modifiedAudioFile);
 
-    let audioUploadComplete = false; // Flag for audio upload completion
-    let imageUploadComplete = false; // Flag for image upload completion
+    let audioUploadComplete = false;
+    let imageUploadComplete = false;
 
     uploadTask.on(
       "state_changed",
@@ -133,23 +136,16 @@ const EditInfo = ({
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100
         );
         setPercentAudio(percent);
+        if (percentAudio === 100) {
+          audioUploadComplete = true;
+        }
       },
       (error) => {
         console.log(error);
         setShowToast(true);
         setError(true);
       },
-      async () => {
-        audioUploadComplete = true; // Mark audio upload as complete
-
-        // Check if both audio and image uploads are complete
-        if (audioUploadComplete && imageUploadComplete) {
-          setShowEdit(false);
-          setShowProcessing(true);
-          setShowToast(true);
-          setError(false);
-        }
-      }
+      async () => {}
     );
 
     if (uploadedImage) {
@@ -163,24 +159,23 @@ const EditInfo = ({
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100
           );
           setPercentImage(percent);
+          if (percentImage === 100) {
+            imageUploadComplete = true;
+          }
         },
         (error) => {
           console.log(error);
           setShowToast(true);
           setError(true);
         },
-        async () => {
-          imageUploadComplete = true; // Mark image upload as complete
-
-          // Check if both audio and image uploads are complete
-          if (audioUploadComplete && imageUploadComplete) {
-            setShowEdit(false);
-            setShowProcessing(true);
-            setShowToast(true);
-            setError(false);
-          }
-        }
+        async () => {}
       );
+    }
+    if (audioUploadComplete && (imageUploadComplete || !uploadedImage)) {
+      setShowEdit(false);
+      setShowProcessing(true);
+      setShowToast(true);
+      setError(false);
     }
   };
 
@@ -208,10 +203,8 @@ const EditInfo = ({
   return (
     <div
       className={`flex flex-col justify-center items-center h-[440px] w-[645px] p-6 gap-3 rounded-md border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)] ${
-        percentAudio !== 100 &&
-        percentAudio !== 0 &&
-        percentImage !== 100 &&
-        percentImage !== 0
+        (percentAudio !== 100 && percentAudio !== 0) ||
+        (percentImage !== 100 && percentImage !== 0)
           ? "animate-pulse"
           : ""
       }`}
@@ -219,13 +212,12 @@ const EditInfo = ({
       <div className="flex gap-6">
         <div className="">
           <div
-            className={`h-[200px] w-[200px] flex flex-col justify-end items-center rounded-lg bg-center bg-cover bg-no-repeat ${
-              errorImage ? "border-2 border-red-400" : ""
-            } `}
+            className={`h-[200px] w-[200px] flex flex-col justify-end items-center rounded-lg bg-center bg-cover bg-no-repeat border-2 `}
             style={{
               backgroundImage: uploadedImageURL
                 ? `url(${uploadedImageURL})`
                 : "linear-gradient(135deg, #9A8080 0%, #82A8C2 100%)",
+              borderColor: errorImage ? "red" : "",
             }}
           >
             <input
@@ -362,10 +354,8 @@ const EditInfo = ({
             className="flex items-center justify-center px-2 py-1 w-[55px] h-[25px] bg-primary text-white rounded-md hover:bg-orange-700"
             onClick={handleUpload}
           >
-            {percentAudio !== 100 &&
-            percentAudio !== 0 &&
-            percentImage !== 100 &&
-            percentImage !== 0 ? (
+            {(percentAudio !== 100 && percentAudio !== 0) ||
+            (percentImage !== 100 && percentImage !== 0) ? (
               <div className="circle">
                 <LoadingIcon />
               </div>
@@ -377,16 +367,24 @@ const EditInfo = ({
       </div>
       <div className="w-full flex justify-center gap-28">
         {percentImage !== 100 && percentImage !== 0 && (
-          <div className="flex flex-col justify-center items-center text-primary text-base font-bold">
-            <div className="">Upload Image</div>
-            <p className="">{percentImage} %</p>
+          <div className="flex flex-col justify-center items-center text-primary text-sm font-semibold">
+            <div className="">Image</div>
+            <progress
+              className="w-48 h-1 rounded-md"
+              value={percentImage}
+              max="100"
+            ></progress>
           </div>
         )}
 
         {percentAudio !== 100 && percentAudio !== 0 && (
-          <div className="flex flex-col justify-center items-center text-primary text-base font-bold">
-            <div className="">Upload audio</div>
-            <p className=""> {percentAudio} %</p>
+          <div className="flex flex-col justify-center items-center text-primary text-sm font-semibold">
+            <div className="">audio</div>
+            <progress
+              className="w-48 h-1 rounded-md"
+              value={percentAudio}
+              max="100"
+            ></progress>
           </div>
         )}
       </div>

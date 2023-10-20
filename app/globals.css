@@ -80,3 +80,18 @@ textarea {
 .toast-container.show {
   transform: translateX(0);
 }
+
+progress {
+  border-radius: 7px;
+  width: 80%;
+  height: 5px;
+  margin-left: -11.5%;
+}
+progress::-webkit-progress-bar {
+  background-color: #ebf2ed;
+  border-radius: 7px;
+}
+progress::-webkit-progress-value {
+  background-color: orange;
+  border-radius: 7px;
+}

@@ -16,10 +16,6 @@ const Upload = ({ setShowEdit, setShowUpload }) => {
     const maxFileSize = 100 * 1024 * 1024;
     if (!checkAudioType(file) || fileSizeInBytes > maxFileSize) {
       setError(true);
-      const timeout = setTimeout(() => {
-        setError(false);
-      }, 3000);
-      return () => clearTimeout(timeout);
     }
 
     setUploadedFile(file);
