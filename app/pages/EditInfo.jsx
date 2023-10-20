@@ -110,43 +110,47 @@ const EditInfo = ({
   };
 
   const handleUpload = async () => {
+    let audioUploadComplete = false;
+    let imageUploadComplete = false;
     if (!title || !slug || !uploadedFile) {
       setShowToast(true);
       setError(true);
       return;
-    }
+    } else {
+      const storage = getStorage();
 
-    const storage = getStorage();
+      const newFileName = `${title}.${fileType}`;
+      const modifiedAudioFile = new Blob([uploadedFile], {
+        type: uploadedFile.type,
+      });
+      modifiedAudioFile.name = newFileName;
+      const audioFileRef = ref(storage, `/files/${slug}/${newFileName}`);
+      const uploadTask = uploadBytesResumable(audioFileRef, modifiedAudioFile);
 
-    const newFileName = `${title}.${fileType}`;
-    const modifiedAudioFile = new Blob([uploadedFile], {
-      type: uploadedFile.type,
-    });
-    modifiedAudioFile.name = newFileName;
-    const audioFileRef = ref(storage, `/files/${slug}/${newFileName}`);
-    const uploadTask = uploadBytesResumable(audioFileRef, modifiedAudioFile);
-
-    let audioUploadComplete = false;
-    let imageUploadComplete = false;
-
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const percent = Math.round(
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-        );
-        setPercentAudio(percent);
-        if (percentAudio === 100) {
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const percent = Math.round(
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+          );
+          setPercentAudio(percent);
+          if (percent === 100) {
+            setShowEdit(false);
+            setShowProcessing(true);
+            setShowToast(true);
+            setError(false);
+          }
+        },
+        (error) => {
+          console.log(error);
+          setShowToast(true);
+          setError(true);
+        },
+        async () => {
           audioUploadComplete = true;
         }
-      },
-      (error) => {
-        console.log(error);
-        setShowToast(true);
-        setError(true);
-      },
-      async () => {}
-    );
+      );
+    }
 
     if (uploadedImage) {
       const imageFileRef = ref(storage, `/files/${slug}/${uploadedImage.name}`);
@@ -159,7 +163,7 @@ const EditInfo = ({
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100
           );
           setPercentImage(percent);
-          if (percentImage === 100) {
+          if (percent === 100) {
             imageUploadComplete = true;
           }
         },
@@ -171,6 +175,7 @@ const EditInfo = ({
         async () => {}
       );
     }
+
     if (audioUploadComplete && (imageUploadComplete || !uploadedImage)) {
       setShowEdit(false);
       setShowProcessing(true);
