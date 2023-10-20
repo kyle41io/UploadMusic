@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { TiTick } from "react-icons/ti";
+import { IconCheck } from "@tabler/icons-react";
 
 const StepBar = ({ currentStep }) => {
   const steps = ["Upload your music", "Edit information", "Processing"];
@@ -16,7 +16,9 @@ const StepBar = ({ currentStep }) => {
           } `}
         >
           <div className="step">
-            {i + 1 < currentStep || complete ? <TiTick size={24} /> : null}
+            {i + 1 < currentStep || complete ? (
+              <IconCheck size={14} strokeWidth={3} />
+            ) : null}
           </div>
           <p className=" step-text">{step}</p>
         </div>

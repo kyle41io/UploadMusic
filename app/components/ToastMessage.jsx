@@ -2,6 +2,7 @@ import React from "react";
 import SuccessTickIcon from "../assets/icons/SuccessTickIcon";
 import XIcon from "../assets/icons/XIcon";
 import ErrorTickIcon from "../assets/icons/ErrorTickIcon";
+import { IconCheck } from "@tabler/icons-react";
 
 const ToastMessage = ({ onClose, error }) => {
   return (
@@ -12,8 +13,18 @@ const ToastMessage = ({ onClose, error }) => {
         background: error ? "#ff40400d" : "#1ab2320d",
       }}
     >
-      {error ? <ErrorTickIcon /> : <SuccessTickIcon />}
-      <p className="w-[190px]">Upload Successfully</p>
+      <div
+        className="flex items-center justify-center w-6 h-6 rounded-full"
+        style={{
+          background: error ? "#FF4040" : "#1AB232",
+        }}
+      >
+        <IconCheck size={18} strokeWidth={3} color="white" />
+        {/* {error ? <ErrorTickIcon /> : <SuccessTickIcon />} */}
+      </div>
+      <p className="w-[190px]">
+        {error ? "Failed to upload..." : "Uploaded succesfully!"}
+      </p>
       <button onClick={onClose}>
         <XIcon />
       </button>

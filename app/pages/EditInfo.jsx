@@ -1,12 +1,7 @@
 "use client";
 import React, { useContext, useState, useRef, useEffect } from "react";
 import FileContext from "@/app/utils";
-import {
-  getStorage,
-  ref,
-  uploadBytesResumable,
-  getDownloadURL,
-} from "firebase/storage";
+import { getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import storage from "@/app/utils/firebaseConfig";
 import LoadingIcon from "../assets/icons/LoadingIcon";
 import CameraIcon from "../assets/icons/CameraIcon";
@@ -26,7 +21,8 @@ const EditInfo = ({
   const [uploadedImageURL, setUploadedImageURL] = useState(null);
   const [fileDuration, setFileDuration] = useState(null);
   const [errorImage, setErrorImage] = useState(null);
-  const [percent, setPercent] = useState(0);
+  const [percentAudio, setPercentAudio] = useState(0);
+  const [percentImage, setPercentImage] = useState(0);
 
   const fileName = uploadedFile?.name?.split(".").slice(0, -1).join(".");
   const fileSize = uploadedFile?.size;
@@ -80,7 +76,8 @@ const EditInfo = ({
   };
 
   function slugify(str) {
-    return String(str)
+    const timestamp = Date.now();
+    const slug = String(str)
       .normalize("NFKD")
       .replace(/[\u0300-\u036f]/g, "")
       .trim()
@@ -88,6 +85,8 @@ const EditInfo = ({
       .replace(/[^a-z0-9 -]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-");
+
+    return `${slug}-${timestamp}`;
   }
 
   const handleCancle = () => {
@@ -107,76 +106,25 @@ const EditInfo = ({
     setUploadedImageURL(imageUrl);
   };
 
-  const checkFileExists = async (fileRef) => {
-    try {
-      await getDownloadURL(fileRef);
-      return true;
-    } catch (error) {
-      return false;
-    }
-  };
-
-  // const generateUniqueFileName = async (fileRef, fileName) => {
-  //   let suffix = 0;
-  //   let newFileName = fileName;
-
-  //   while (await checkFileExists(`${fileRef}/${newFileName}`)) {
-  //     suffix++;
-  //     const fileExtension = fileName.split(".").pop();
-  //     const baseName = fileName.split(".").slice(0, -1).join(".");
-  //     newFileName = `${baseName} (${suffix}).${fileExtension}`;
-  //     fileRef = ref(storage, `files/${slug}/${newFileName}`);
-  //   }
-
-  //   return newFileName;
-  // };
-
-  const generateUniqueFileName = async (fileRef, fileName) => {
-    let newFileName = fileName;
-    let suffix = 0;
-
-    while (true) {
-      const exists = await checkFileExists(`${fileRef}/${newFileName}`);
-      if (!exists) {
-        break;
-      }
-
-      suffix++;
-      const fileExtension = fileName.split(".").pop();
-      const baseFileName = fileName.split(".").slice(0, -1).join(".");
-      newFileName = `${baseFileName} (${suffix}).${fileExtension}`;
-    }
-
-    return newFileName;
-  };
-
   const handleUpload = async () => {
-    if (!title || !slug) {
+    if (!title || !slug || !uploadedFile) {
       setShowToast(true);
       setError(true);
       return;
     }
 
-    if (!uploadedFile) {
-      alert("Please upload an audio file first!");
-      return;
-    }
-    setPercent(1);
     const storage = getStorage();
 
-    const newFileName = await generateUniqueFileName(
-      ref(storage, `files/${slug}`),
-      `${title}.${fileType}`
-    );
-    // const newFileName = `${title}.${fileType}`;
-    // Tạo Blob mới với tên file mới
-    const modifiedMp3File = new Blob([uploadedFile], {
+    const newFileName = `${title}.${fileType}`;
+    const modifiedAudioFile = new Blob([uploadedFile], {
       type: uploadedFile.type,
     });
-    modifiedMp3File.name = newFileName;
-    // Tạo tham chiếu đến file trên Firebase Storage
-    const mp3FileRef = ref(storage, `/files/${slug}/${newFileName}`);
-    const uploadTask = uploadBytesResumable(mp3FileRef, modifiedMp3File);
+    modifiedAudioFile.name = newFileName;
+    const audioFileRef = ref(storage, `/files/${slug}/${newFileName}`);
+    const uploadTask = uploadBytesResumable(audioFileRef, modifiedAudioFile);
+
+    let audioUploadComplete = false; // Flag for audio upload completion
+    let imageUploadComplete = false; // Flag for image upload completion
 
     uploadTask.on(
       "state_changed",
@@ -184,40 +132,56 @@ const EditInfo = ({
         const percent = Math.round(
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100
         );
-        if (percent === 100) {
-          setPercent(100);
+        setPercentAudio(percent);
+      },
+      (error) => {
+        console.log(error);
+        setShowToast(true);
+        setError(true);
+      },
+      async () => {
+        audioUploadComplete = true; // Mark audio upload as complete
+
+        // Check if both audio and image uploads are complete
+        if (audioUploadComplete && imageUploadComplete) {
           setShowEdit(false);
           setShowProcessing(true);
           setShowToast(true);
           setError(false);
         }
-      },
-      (error) => {
-        console.log(error);
-        // Handle upload error
-      },
-      async () => {
-        if (uploadedImage) {
-          const imageFileRef = ref(
-            storage,
-            `/files/${slug}/${uploadedImage.name}`
-          );
-          const imageUploadTask = uploadBytesResumable(
-            imageFileRef,
-            uploadedImage
-          );
-
-          imageUploadTask.on(
-            "state_changed",
-            (snapshot) => {},
-            (error) => {
-              console.log(error);
-              // Handle upload error
-            }
-          );
-        }
       }
     );
+
+    if (uploadedImage) {
+      const imageFileRef = ref(storage, `/files/${slug}/${uploadedImage.name}`);
+      const imageUploadTask = uploadBytesResumable(imageFileRef, uploadedImage);
+
+      imageUploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const percent = Math.round(
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+          );
+          setPercentImage(percent);
+        },
+        (error) => {
+          console.log(error);
+          setShowToast(true);
+          setError(true);
+        },
+        async () => {
+          imageUploadComplete = true; // Mark image upload as complete
+
+          // Check if both audio and image uploads are complete
+          if (audioUploadComplete && imageUploadComplete) {
+            setShowEdit(false);
+            setShowProcessing(true);
+            setShowToast(true);
+            setError(false);
+          }
+        }
+      );
+    }
   };
 
   const handleChangeTitle = (title) => {
@@ -242,12 +206,17 @@ const EditInfo = ({
   };
 
   return (
-    <div className="flex flex-col justify-center items-center h-[440px] w-[645px] p-6 gap-3 rounded-md border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]">
-      <div
-        className={`flex gap-6 ${
-          percent !== 100 && percent !== 0 ? "animate-pulse" : ""
-        }`}
-      >
+    <div
+      className={`flex flex-col justify-center items-center h-[440px] w-[645px] p-6 gap-3 rounded-md border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)] ${
+        percentAudio !== 100 &&
+        percentAudio !== 0 &&
+        percentImage !== 100 &&
+        percentImage !== 0
+          ? "animate-pulse"
+          : ""
+      }`}
+    >
+      <div className="flex gap-6">
         <div className="">
           <div
             className={`h-[200px] w-[200px] flex flex-col justify-end items-center rounded-lg bg-center bg-cover bg-no-repeat ${
@@ -393,7 +362,10 @@ const EditInfo = ({
             className="flex items-center justify-center px-2 py-1 w-[55px] h-[25px] bg-primary text-white rounded-md hover:bg-orange-700"
             onClick={handleUpload}
           >
-            {percent !== 0 ? (
+            {percentAudio !== 100 &&
+            percentAudio !== 0 &&
+            percentImage !== 100 &&
+            percentImage !== 0 ? (
               <div className="circle">
                 <LoadingIcon />
               </div>
@@ -403,9 +375,21 @@ const EditInfo = ({
           </button>
         </div>
       </div>
-      {/* {percent !== 0 && (
-        <p className="text-primary text-xl font-bold">{percent} %</p>
-      )} */}
+      <div className="w-full flex justify-center gap-20">
+        {percentImage !== 100 && percentImage !== 0 && (
+          <div className="flex flex-col justify-center items-center text-primary text-lg font-bold">
+            <div className="">Upload Image</div>
+            <p className="">{percentImage} %</p>
+          </div>
+        )}
+
+        {percentAudio !== 100 && percentAudio !== 0 && (
+          <div className="flex flex-col justify-center items-center text-primary text-lg font-bold">
+            <div className="">Upload audio</div>
+            <p className=""> {percentAudio} %</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
