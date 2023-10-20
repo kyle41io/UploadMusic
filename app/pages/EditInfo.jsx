@@ -375,16 +375,16 @@ const EditInfo = ({
           </button>
         </div>
       </div>
-      <div className="w-full flex justify-center gap-20">
+      <div className="w-full flex justify-center gap-28">
         {percentImage !== 100 && percentImage !== 0 && (
-          <div className="flex flex-col justify-center items-center text-primary text-lg font-bold">
+          <div className="flex flex-col justify-center items-center text-primary text-base font-bold">
             <div className="">Upload Image</div>
             <p className="">{percentImage} %</p>
           </div>
         )}
 
         {percentAudio !== 100 && percentAudio !== 0 && (
-          <div className="flex flex-col justify-center items-center text-primary text-lg font-bold">
+          <div className="flex flex-col justify-center items-center text-primary text-base font-bold">
             <div className="">Upload audio</div>
             <p className=""> {percentAudio} %</p>
           </div>
