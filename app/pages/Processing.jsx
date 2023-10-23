@@ -46,7 +46,7 @@ const Processing = () => {
 
   return (
     <div className="flex flex-col items-center p-14 gap-6 ">
-      <div className="flex justify-start items-center h-[162px] w-[645px] p-10 gap-10 rounded-md border border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]">
+      <div className="flex justify-start items-center min-h-[162px] w-[645px] p-10 gap-10 rounded-md border border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]">
         <div
           style={{
             backgroundImage: uploadedImageFile
@@ -61,14 +61,8 @@ const Processing = () => {
           <h2 className="text-[#0F0F0F] font-semibold text-base">
             Congratulation, you’ve uploaded successfully !
           </h2>
-          <div className="w-full flex text-sm gap-1 overflow-hidden">
-            <p className="overflow-hidden whitespace-nowrap overflow-ellipsis">
-              {title}
-            </p>
-            <span> - </span>
-            <p className="overflow-hidden whitespace-nowrap overflow-ellipsis">
-              {artist ? artist : "N/A"}
-            </p>
+          <div className="w-full flex text-sm gap-1 ">
+            {title} - {artist ? artist : "N/A"}
           </div>
           <div className="flex gap-4 text-xs text-[#979797]">
             <p>{duration}</p> <p>{genre}</p>
