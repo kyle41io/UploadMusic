@@ -61,8 +61,17 @@ const Processing = () => {
           <h2 className="text-[#0F0F0F] font-semibold text-base">
             Congratulation, you’ve uploaded successfully !
           </h2>
-          <div className="w-full flex text-sm gap-1 ">
-            {title} - {artist ? artist : "N/A"}
+          <div
+            className="max-w-full flex text-sm gap-1 "
+            style={{ wordWrap: "break-word" }}
+          >
+            <p className="overflow-hidden whitespace-nowrap overflow-ellipsis">
+              {title}
+            </p>{" "}
+            -{" "}
+            <p className="overflow-hidden whitespace-nowrap overflow-ellipsis">
+              {artist ? artist : "N/A"}
+            </p>
           </div>
           <div className="flex gap-4 text-xs text-[#979797]">
             <p>{duration}</p> <p>{genre}</p>
