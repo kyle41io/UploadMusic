@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { IconChevronDown } from "@tabler/icons-react";
+import { IconChevronUp } from "@tabler/icons-react";
 
 import Image from "next/image";
 
@@ -188,10 +189,14 @@ const Input = ({
             style={inputStyles}
           >
             {value}
-            <IconChevronDown size={20} color="gray" />
+            {dropdownOpen ? (
+              <IconChevronUp size={20} color="gray" />
+            ) : (
+              <IconChevronDown size={20} color="gray" />
+            )}
 
             {dropdownOpen && (
-              <ul className="dropdown-list w-full h-24 absolute z-10 mt-32 -ml-1 bg-white border border-[#dcdcdc] rounded overflow-auto">
+              <ul className="dropdown-list w-full h-24 absolute z-10 mt-32 -ml-1 bg-white border border-[#dcdcdc] rounded overflow-y-scroll">
                 <li onClick={() => handleChange("None")}>None</li>
                 <li onClick={() => handleChange("Ballad")}>Ballad</li>
                 <li onClick={() => handleChange("Rock")}>Rock</li>
