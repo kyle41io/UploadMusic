@@ -8,12 +8,11 @@ const Processing = () => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [audioURL, setAudioURL] = useState("");
   const { infoFile, uploadedImageFile, uploadedFile } = useContext(FileContext);
-  const { title, artist, duration, genre, slug } = infoFile;
-  const fileType = uploadedFile?.name?.split(".").pop();
+  const { title, artist, duration, genre, slug, ref } = infoFile;
 
   useEffect(() => {
     const storage = getStorage();
-    const storageRef = ref(storage, `/files/${slug}/${title}.${fileType}`);
+    const storageRef = ref;
 
     uploadBytes(storageRef, uploadedFile)
       .then((snapshot) => {
@@ -28,7 +27,7 @@ const Processing = () => {
       .catch((error) => {
         console.log(error);
       });
-  }, [uploadedFile, slug, title, fileType]);
+  }, [uploadedFile, ref]);
 
   const handleCopyLink = () => {
     const linkInput = document.getElementById("link-input");

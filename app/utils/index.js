@@ -9,6 +9,7 @@ export const FileProvider = ({ children }) => {
     duration: null,
     genre: null,
     slug: null,
+    ref: null,
   });
   const [uploadedImageFile, setUploadedImageFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);

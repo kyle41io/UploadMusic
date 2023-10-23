@@ -5,7 +5,7 @@ import { getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import storage from "@/app/utils/firebaseConfig";
 import LoadingIcon from "../assets/icons/LoadingIcon";
 import CameraIcon from "../assets/icons/CameraIcon";
-import RequiredIcon from "../assets/icons/RequiredIcon";
+import Input from "../components/Input";
 
 const EditInfo = ({
   setShowUpload,
@@ -29,8 +29,8 @@ const EditInfo = ({
   const fileType = uploadedFile?.name?.split(".").pop();
   const [title, setTitle] = useState(fileName || "");
   const [slug, setSlug] = useState(slugify(fileName || ""));
-  const [genre, setGenre] = useState("none");
-  const [artist, setArtist] = useState("N/A");
+  const [genre, setGenre] = useState("None");
+  const [artist, setArtist] = useState("");
   const [description, setDescription] = useState("");
 
   const audioRef = useRef();
@@ -76,7 +76,6 @@ const EditInfo = ({
   };
 
   function slugify(str) {
-    const timestamp = Date.now();
     const slug = String(str)
       .normalize("NFKD")
       .replace(/[\u0300-\u036f]/g, "")
@@ -86,7 +85,7 @@ const EditInfo = ({
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-");
 
-    return `${slug}-${timestamp}`;
+    return `${slug}`;
   }
 
   const handleCancle = () => {
@@ -110,22 +109,24 @@ const EditInfo = ({
   };
 
   const handleUpload = async () => {
+    const timestamp = Date.now();
     let audioUploadComplete = false;
     let imageUploadComplete = false;
+
     if (!title || !slug || !uploadedFile) {
       setShowToast(true);
       setError(true);
       return;
     } else {
-      const storage = getStorage();
-
-      const newFileName = `${title}.${fileType}`;
-      const modifiedAudioFile = new Blob([uploadedFile], {
-        type: uploadedFile.type,
-      });
-      modifiedAudioFile.name = newFileName;
-      const audioFileRef = ref(storage, `/files/${slug}/${newFileName}`);
-      const uploadTask = uploadBytesResumable(audioFileRef, modifiedAudioFile);
+      const audioFileRef = ref(
+        storage,
+        `/files/${slug}/${title}-${timestamp}.${fileType}`
+      );
+      setInfoFile((prevInfoFile) => ({
+        ...prevInfoFile,
+        ref: audioFileRef,
+      }));
+      const uploadTask = uploadBytesResumable(audioFileRef, uploadedFile);
 
       uploadTask.on(
         "state_changed",
@@ -135,10 +136,8 @@ const EditInfo = ({
           );
           setPercentAudio(percent);
           if (percent === 100) {
-            setShowEdit(false);
-            setShowProcessing(true);
-            setShowToast(true);
-            setError(false);
+            audioUploadComplete = true;
+            checkUploadComplete();
           }
         },
         (error) => {
@@ -146,9 +145,7 @@ const EditInfo = ({
           setShowToast(true);
           setError(true);
         },
-        async () => {
-          audioUploadComplete = true;
-        }
+        async () => {}
       );
     }
 
@@ -165,6 +162,7 @@ const EditInfo = ({
           setPercentImage(percent);
           if (percent === 100) {
             imageUploadComplete = true;
+            checkUploadComplete();
           }
         },
         (error) => {
@@ -175,13 +173,14 @@ const EditInfo = ({
         async () => {}
       );
     }
-
-    if (audioUploadComplete && (imageUploadComplete || !uploadedImage)) {
-      setShowEdit(false);
-      setShowProcessing(true);
-      setShowToast(true);
-      setError(false);
-    }
+    const checkUploadComplete = () => {
+      if (audioUploadComplete && (imageUploadComplete || !uploadedImage)) {
+        setShowEdit(false);
+        setShowProcessing(true);
+        setShowToast(true);
+        setError(false);
+      }
+    };
   };
 
   const handleChangeTitle = (title) => {
@@ -207,12 +206,7 @@ const EditInfo = ({
 
   return (
     <div
-      className={`flex flex-col justify-center items-center h-[440px] w-[645px] p-6 gap-3 rounded-md border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)] ${
-        (percentAudio !== 100 && percentAudio !== 0) ||
-        (percentImage !== 100 && percentImage !== 0)
-          ? "animate-pulse"
-          : ""
-      }`}
+      className={`flex flex-col justify-center items-center h-[440px] w-[645px] p-6 gap-3 rounded-md border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]`}
     >
       <div className="flex gap-6">
         <div className="">
@@ -251,102 +245,63 @@ const EditInfo = ({
         </div>
 
         <audio ref={audioRef} className="audio-element"></audio>
-        <div className="flex flex-col h-[346px] w-[373px] gap-4 items-center justify-center text-xs">
-          <div className="w-full gap-1">
-            <label
-              htmlFor="title"
-              className={` ${title === "" ? "!text-red-500" : ""}`}
-            >
-              Title <RequiredIcon />
-            </label>
-            <input
-              id="title"
-              value={title}
-              onChange={(event) => handleChangeTitle(event.target.value)}
-              type="text"
-              className={`h-7 w-full ${
-                title === "" ? "!border-red-500 !outline-red-500" : ""
-              }`}
-              maxLength="100"
-            />
-          </div>
+        <div className="flex flex-col h-[346px] w-[373px] gap-3 items-center justify-center text-xs">
+          <Input
+            value={title}
+            onChange={(e) => handleChangeTitle(e)}
+            required
+            label={"Title"}
+          />
           <div className="flex h-8 w-full gap-1">
-            <div className="w-[117px] text-xs">
+            <div className="w-[117px] text-xs gap-1">
               <h3 className="">Duration</h3>
               <div className="text-[#979797] ">{formatTime(fileDuration)}</div>
             </div>
-            <div className="w-[117px] text-xs">
+            <div className="w-[117px] text-xs gap-1">
               <h3 className="">Size</h3>
               <div className="text-[#979797]">{formatSize(fileSize)}</div>
             </div>
-            <div className="w-[117px] text-xs">
+            <div className="w-[117px] text-xs gap-1">
               <h3 className="">Type</h3>
               <div className="text-[#979797]">{fileType}</div>
             </div>
           </div>
-          <div className="w-full gap-1">
-            <label
-              htmlFor="slug"
-              className={`${slug === "" ? "!text-red-500" : ""}`}
-            >
-              Slug <RequiredIcon />
-            </label>
-            <input
-              id="slug"
-              type="text"
-              className={`h-7 w-full ${
-                slug === "" ? "!border-red-500 !outline-red-500" : ""
-              }`}
-              value={slug}
-              onChange={(event) => handleChangeSlug(event.target.value)}
-              maxLength="100"
-            />
-          </div>
-          <div className="flex gap-4">
-            <div className="gap-1">
-              <label htmlFor="genre">Genre</label>
-              <select
-                id="genre"
-                className="w-[178.5px] h-7 rounded border"
+          <Input
+            value={slug}
+            onChange={(e) => handleChangeSlug(e)}
+            required
+            label={"Slug"}
+          />
+          <div className="w-full flex gap-3">
+            <div style={{ width: "calc(50% - 6px)" }}>
+              <Input
+                type="select"
                 value={genre}
-                onChange={(event) => handleChangeGenre(event.target.value)}
-              >
-                <option value="None">None</option>
-                <option value="Ballad">Ballad</option>
-                <option value="Rock">Rock</option>
-                <option value="RnB">R&amp;B</option>
-                <option value="Acoustic">Acoustic</option>
-              </select>
+                onChange={(e) => handleChangeGenre(e)}
+                label={"Genre"}
+              />
             </div>
-            <div className="gap-1">
-              <label htmlFor="artist">Artist</label>
-              <input
-                placeholder="Enter the artist’s name"
-                id="artist"
-                type="text"
-                className="w-[178.5px] h-7 rounded border"
-                onChange={(event) => handleChangeArtist(event.target.value)}
+
+            <div style={{ width: "calc(50% - 6px)" }}>
+              <Input
+                value={artist}
+                onChange={(e) => handleChangeArtist(e)}
+                label={"Artist"}
               />
             </div>
           </div>
-          <div className="flex flex-col w-full gap-1">
-            <label htmlFor="desc">Description</label>
-            <textarea
-              placeholder="Describe your track"
-              name=""
-              id="desc"
-              cols="30"
-              rows="10"
-              className="h-20"
-              onChange={(event) => setDescription(event.target.value)}
-              maxLength="500"
-            ></textarea>
-          </div>
+          <Input
+            type="textarea"
+            value={description}
+            onChange={(e) => setDescription(e)}
+            label={"Description"}
+          />
         </div>
       </div>
       <div className="flex w-full justify-between items-center">
         <p className="text-black text-xs">
-          <RequiredIcon /> Required fields
+          <span className="text-red-500 font-bold text-base ml-1">*</span>{" "}
+          Required fields
         </p>
         <div className="flex gap-4">
           <button
@@ -371,11 +326,9 @@ const EditInfo = ({
         </div>
       </div>
       <div className="w-full flex justify-center gap-28">
-        {percentImage === 100 && (
-          <p className="text-sm text-green-600">Upload Image Done</p>
-        )}
+        {percentImage === 100 && <p className="text-sm text-primary">Image</p>}
         {percentImage !== 100 && percentImage !== 0 && (
-          <div className="flex flex-col justify-center items-center text-primary text-sm font-semibold">
+          <div className="flex flex-col justify-center items-center text-slate-200 text-sm font-semibold">
             <div className="">Image</div>
             <progress
               className="w-48 h-1 rounded-md"
@@ -384,10 +337,9 @@ const EditInfo = ({
             ></progress>
           </div>
         )}
-
         {percentAudio !== 100 && percentAudio !== 0 && (
-          <div className="flex flex-col justify-center items-center text-primary text-sm font-semibold">
-            <div className="">audio</div>
+          <div className="flex flex-col justify-center items-center text-slate-200 text-sm font-semibold">
+            <div className="">Audio</div>
             <progress
               className="w-48 h-1 rounded-md"
               value={percentAudio}
@@ -395,9 +347,7 @@ const EditInfo = ({
             ></progress>
           </div>
         )}
-        {percentAudio === 100 && (
-          <p className="text-sm text-green-600">Upload Audio Done</p>
-        )}
+        {percentAudio === 100 && <p className="text-sm text-primary">Audio</p>}
       </div>
     </div>
   );

@@ -95,3 +95,12 @@ progress::-webkit-progress-value {
   background-color: orange;
   border-radius: 7px;
 }
+
+.dropdown-list li {
+  padding: 5px;
+  cursor: pointer;
+}
+
+.dropdown-list li:hover {
+  background-color: #f6f6f6;
+}
