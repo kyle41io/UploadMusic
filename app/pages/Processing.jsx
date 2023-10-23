@@ -77,30 +77,6 @@ const Processing = () => {
             <label className="text-[#979797] text-xs" htmlFor="link">
               Link
             </label>
-            {/* <div className="relative">
-              <input
-                id="link-input"
-                name="link"
-                type="text"
-                placeholder={audioURL ? "" : "loading..."}
-                className="bg-slate-100/50 w-full text-blue-600 p-2 pr-10 text-xs h-7"
-                value={audioURL}
-                readOnly
-              />
-              <div
-                className="flex justify-center items-center w-5 h-5 rounded-md absolute right-3 top-1/2 -translate-y-[10px] cursor-pointer hover:bg-primary/50"
-                onClick={handleCopyLink}
-              >
-                <span className="">
-                  <CopyIcon />
-                </span>
-              </div>
-              {copySuccess && (
-                <div className="bg-green-500/80 text-slate-200 text-xs absolute p-1 -bottom-8 left-0 ml-2 mb-1 rounded-md">
-                  Copied to clipboard!
-                </div>
-              )}
-            </div> */}
             <div className="relative">
               <input
                 id="link-input"
