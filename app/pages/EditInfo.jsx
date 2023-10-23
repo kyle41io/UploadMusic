@@ -239,7 +239,7 @@ const EditInfo = ({
 
   return (
     <div
-      className={`flex flex-col justify-center items-center h-[440px] w-[645px] p-6 gap-3 rounded-md border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]`}
+      className={`flex flex-col justify-center items-center h-[440px] w-[645px] p-6 gap-3 rounded-md border border-[#DCDCDC] shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)]`}
     >
       <div className="flex gap-6">
         <div className="">

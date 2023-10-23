@@ -52,7 +52,7 @@ const Upload = ({ setShowEdit, setShowUpload }) => {
         className={`flex flex-col justify-center items-center h-[335px] w-[645px] p-6 gap-3 rounded-md ${
           dragging
             ? "border-primary/75 border-4 border-dashed"
-            : "border-[#DCDCDC]"
+            : "border border-[#DCDCDC]"
         } shadow-[0px_0px_8px_0px_rgba(51,51,51,0.10)] ${
           error ? "border-2 border-red-400" : ""
         }`}
