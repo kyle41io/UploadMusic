@@ -74,7 +74,14 @@ export default function Home() {
           showToast && !closingToast ? "show" : ""
         } ${closingToast ? "closing" : ""}`}
       >
-        {showToast && <ToastMessage onClose={handleCloseToast} error={error} />}
+        {showToast && (
+          <ToastMessage
+            onClose={handleCloseToast}
+            error={error}
+            errorMessage={"Failed to upload"}
+            successMessage={"Uploaded successfully"}
+          />
+        )}
       </div>
     </main>
   );

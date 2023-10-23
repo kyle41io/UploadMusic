@@ -1,8 +1,9 @@
 import React from "react";
 import XIcon from "../assets/icons/XIcon";
 import { IconCheck } from "@tabler/icons-react";
+import styles from "./ToastMessage.css";
 
-const ToastMessage = ({ onClose, error }) => {
+const ToastMessage = ({ onClose, error, errorMessage, successMessage }) => {
   return (
     <div
       className={`flex justify-between items-center w-[326px] h-[48px] rounded-lg p-[10px] pr-[16px] border-2 `}
@@ -18,11 +19,8 @@ const ToastMessage = ({ onClose, error }) => {
         }}
       >
         <IconCheck size={18} strokeWidth={3} color="white" />
-        {/* {error ? <ErrorTickIcon /> : <SuccessTickIcon />} */}
       </div>
-      <p className="w-[190px]">
-        {error ? "Failed to upload..." : "Uploaded succesfully!"}
-      </p>
+      <p className="w-[190px]">{error ? errorMessage : successMessage}</p>
       <button onClick={onClose}>
         <XIcon />
       </button>

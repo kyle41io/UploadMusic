@@ -1,7 +1,5 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { IconChevronDown } from "@tabler/icons-react";
-import { IconChevronUp } from "@tabler/icons-react";
 
 import Image from "next/image";
 
@@ -28,7 +26,6 @@ const Input = ({
   const [labelStyles, setLabelStyles] = useState({
     color: disabled ? "#F2F4F5" : "#CFD3D4",
   });
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const inputRef = useRef(null);
   const [text, setText] = useState("");
   const [characterCount, setCharacterCount] = useState(0);
@@ -84,7 +81,7 @@ const Input = ({
   };
 
   const handleBlur = (value) => {
-    if (value == "" && required) {
+    if (!value && required) {
       setInputStyles({
         outlineColor: "red",
         borderColor: "red",
@@ -92,7 +89,7 @@ const Input = ({
       setLabelStyles({
         color: "red",
       });
-    } else if (inputStyles.borderColor === color && value !== "") {
+    } else if (inputStyles.borderColor === color && value) {
       setInputStyles({
         borderColor: "#474646b0",
         outlineColor: color,
@@ -157,8 +154,8 @@ const Input = ({
         {type === "textarea" && (
           <div className="relative">
             {!isMaxLimitReached && (
-              <span className="absolute bottom-3 right-3 transform translate-y-1/2 text-gray-500">
-                {characterCount}/{maxLimit}
+              <span className="absolute -top-6 right-3 transform translate-y-1/2 text-gray-500">
+                {characterCount}
               </span>
             )}
 
@@ -179,41 +176,13 @@ const Input = ({
             )}
           </div>
         )}
-        {type === "select" && (
-          <div
-            ref={inputRef}
-            id="genre"
-            className="flex relative justify-between items-center h-7 px-1 rounded border"
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            onBlur={(e) => handleBlur(e.target.value)}
-            style={inputStyles}
-          >
-            {value}
-            {dropdownOpen ? (
-              <IconChevronUp size={20} color="gray" />
-            ) : (
-              <IconChevronDown size={20} color="gray" />
-            )}
 
-            {dropdownOpen && (
-              <ul className="dropdown-list w-full h-24 absolute z-10 mt-32 -ml-1 bg-white border border-[#dcdcdc] rounded overflow-y-scroll">
-                <li onClick={() => handleChange("None")}>None</li>
-                <li onClick={() => handleChange("Ballad")}>Ballad</li>
-                <li onClick={() => handleChange("Rock")}>Rock</li>
-                <li onClick={() => handleChange("RnB")}>R&amp;B</li>
-                <li onClick={() => handleChange("Acoustic")}>Acoustic</li>
-              </ul>
-            )}
-          </div>
-        )}
         <div className="">
-          {inputStyles.outlineColor === "red" &&
-            isInputChanged &&
-            value !== "" && (
-              <p className="text-red-600 text-xs opacity-70 w-80">
-                {errorMessage}
-              </p>
-            )}
+          {inputStyles.outlineColor === "red" && isInputChanged && value && (
+            <p className="text-red-600 text-xs opacity-70 w-80">
+              {errorMessage}
+            </p>
+          )}
           {inputStyles.outlineColor === "red" && value === "" && (
             <p className="text-red-600 text-xs opacity-70 w-80">
               This field is required, can not be blank.

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { IconCheck } from "@tabler/icons-react";
+import styles from "./StepBar.css";
 
 const StepBar = ({ currentStep }) => {
   const steps = ["Upload your music", "Edit information", "Processing"];

@@ -1,0 +1,11 @@
+.toast-container {
+  position: fixed;
+  bottom: 80px;
+  right: 50px;
+  transform: translateX(100%);
+  transition: transform 0.5s ease-in-out;
+}
+
+.toast-container.show {
+  transform: translateX(0);
+}
