@@ -66,7 +66,9 @@ const Processing = () => {
               {title}
             </p>
             <span> - </span>
-            <p>{artist ? artist : "N/A"}</p>
+            <p className="overflow-hidden whitespace-nowrap overflow-ellipsis">
+              {artist ? artist : "N/A"}
+            </p>
           </div>
           <div className="flex gap-4 text-xs text-[#979797]">
             <p>{duration}</p> <p>{genre}</p>
