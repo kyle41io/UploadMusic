@@ -1,7 +1,7 @@
 import React from "react";
 import XIcon from "../assets/icons/XIcon";
 import { IconCheck } from "@tabler/icons-react";
-import styles from "./ToastMessage.css";
+import "./ToastMessage.css";
 
 const ToastMessage = ({ onClose, error, errorMessage, successMessage }) => {
   return (

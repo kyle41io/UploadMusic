@@ -1,0 +1,36 @@
+.circle {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  animation: rotate 5s linear infinite;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.dropdown-list li {
+  padding: 5px;
+  cursor: pointer;
+}
+
+.dropdown-list li:hover {
+  background-color: #f6f6f6;
+}
+
+.dropdown-list::-webkit-scrollbar {
+  width: 5px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0);
+}
+
+.dropdown-list::-webkit-scrollbar-thumb {
+  background: rgb(212, 212, 212);
+  border-radius: 4px;
+  margin: 1px;
+}

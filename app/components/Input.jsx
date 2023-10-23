@@ -1,6 +1,4 @@
-"use client";
-import React, { useState, useRef, useEffect } from "react";
-
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
 
 const Input = ({
@@ -28,20 +26,21 @@ const Input = ({
   });
   const inputRef = useRef(null);
   const [text, setText] = useState("");
-  const [characterCount, setCharacterCount] = useState(0);
   const [isMaxLimitReached, setIsMaxLimitReached] = useState(false);
   const maxLimit = 500;
+
+  const characterCount = useMemo(() => {
+    return maxLimit - text.length;
+  }, [text]);
 
   const handleChange = (value) => {
     let isValid = true;
     if (type === "text" && required) {
-      isValid = value.trim() !== "";
+      isValid = value;
     } else if (type === "textarea") {
       const inputValue = value;
-      const currentCharacterCount = inputValue.length;
-      setCharacterCount(currentCharacterCount);
-      setIsMaxLimitReached(currentCharacterCount >= maxLimit);
       setText(inputValue);
+      setIsMaxLimitReached(inputValue.length >= maxLimit);
       isValid = !isMaxLimitReached;
     }
 
@@ -60,16 +59,6 @@ const Input = ({
       });
       setLabelStyles({
         color: color,
-      });
-    }
-    if (type === "select") {
-      setInputStyles({
-        ...inputStyles,
-        border: "1px solid #474646b0",
-      });
-      setLabelStyles({
-        ...labelStyles,
-        color: "#474646b0",
       });
     }
 
@@ -97,7 +86,7 @@ const Input = ({
       setLabelStyles({
         color: "#474646b0",
       });
-    } else if (value === "" && !required) {
+    } else if (!value && !required) {
       setInputStyles({
         borderColor: "#CFD3D4",
         outlineColor: color,
@@ -107,6 +96,17 @@ const Input = ({
       });
     }
   };
+  useEffect(() => {
+    if (value) {
+      setInputStyles({
+        borderColor: "#474646b0",
+        outlineColor: color,
+      });
+      setLabelStyles({
+        color: "#474646b0",
+      });
+    }
+  }, [value, color]);
 
   return (
     <div className="relative w-full">
@@ -183,7 +183,7 @@ const Input = ({
               {errorMessage}
             </p>
           )}
-          {inputStyles.outlineColor === "red" && value === "" && (
+          {inputStyles.outlineColor === "red" && !value && (
             <p className="text-red-600 text-xs opacity-70 w-80">
               This field is required, can not be blank.
             </p>

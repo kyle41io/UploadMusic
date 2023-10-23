@@ -7,6 +7,7 @@ import { getStorage, ref, getDownloadURL, uploadBytes } from "firebase/storage";
 const Processing = () => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [audioURL, setAudioURL] = useState("");
+  const [isLinkHovered, setIsLinkHovered] = useState(false);
   const { infoFile, uploadedImageFile, uploadedFile } = useContext(FileContext);
   const { title, artist, duration, genre, slug, ref } = infoFile;
 
@@ -38,6 +39,9 @@ const Processing = () => {
     setTimeout(() => {
       setCopySuccess(false);
     }, 2000);
+  };
+  const handleAccessLink = () => {
+    window.open(audioURL, "_blank");
   };
 
   const handleAction = () => {
@@ -73,7 +77,7 @@ const Processing = () => {
             <label className="text-[#979797] text-xs" htmlFor="link">
               Link
             </label>
-            <div className="relative">
+            {/* <div className="relative">
               <input
                 id="link-input"
                 name="link"
@@ -94,6 +98,42 @@ const Processing = () => {
               {copySuccess && (
                 <div className="bg-green-500/80 text-slate-200 text-xs absolute p-1 -bottom-8 left-0 ml-2 mb-1 rounded-md">
                   Copied to clipboard!
+                </div>
+              )}
+            </div> */}
+            <div className="relative">
+              <input
+                id="link-input"
+                name="link"
+                type="text"
+                placeholder={audioURL ? "" : "loading..."}
+                className="bg-slate-100/50 w-full text-blue-600 p-2 pr-10 text-xs h-7"
+                value={audioURL}
+                readOnly
+                onMouseEnter={() => setIsLinkHovered(true)}
+                onMouseLeave={() => setIsLinkHovered(false)}
+              />
+              <div
+                className="flex justify-center items-center w-5 h-5 rounded-md absolute right-3 top-1/2 -translate-y-[10px] cursor-pointer hover:bg-primary/50"
+                onClick={handleCopyLink}
+              >
+                <span className="">
+                  <CopyIcon />
+                </span>
+              </div>
+              {copySuccess && (
+                <div className="bg-green-500/80 text-slate-200 text-xs absolute p-1 -bottom-8 left-0 ml-2 mb-1 rounded-md">
+                  Copied to clipboard!
+                </div>
+              )}
+              {audioURL && isLinkHovered && (
+                <div
+                  onMouseEnter={() => setIsLinkHovered(true)}
+                  onMouseLeave={() => setIsLinkHovered(false)}
+                  className="text-blue-600 bg-gray-300 text-base absolute left-2 px-4 py-1 top-4 -translate-y-[-10px] rounded-md cursor-pointer hover:text-blue-300"
+                  onClick={handleAccessLink}
+                >
+                  Access Link -&gt;
                 </div>
               )}
             </div>

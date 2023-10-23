@@ -6,6 +6,7 @@ import storage from "@/app/utils/firebaseConfig";
 import LoadingIcon from "../assets/icons/LoadingIcon";
 import CameraIcon from "../assets/icons/CameraIcon";
 import Input from "../components/Input";
+import "./EditInfo.css";
 import { IconChevronDown } from "@tabler/icons-react";
 import { IconChevronUp } from "@tabler/icons-react";
 
