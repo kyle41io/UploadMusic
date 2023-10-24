@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IconChevronDown } from "@tabler/icons-react";
 import { IconChevronUp } from "@tabler/icons-react";
+import "./Dropdown.css";
 
 const Dropdown = ({ genre, setGenre, setInfoFile }) => {
   const [inputStyles, setInputStyles] = useState({
