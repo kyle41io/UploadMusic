@@ -7,8 +7,7 @@ import LoadingIcon from "../assets/icons/LoadingIcon";
 import CameraIcon from "../assets/icons/CameraIcon";
 import Input from "../components/Input";
 import "./EditInfo.css";
-import { IconChevronDown } from "@tabler/icons-react";
-import { IconChevronUp } from "@tabler/icons-react";
+import Dropdown from "../components/Dropdown";
 
 const EditInfo = ({
   setShowUpload,
@@ -26,13 +25,6 @@ const EditInfo = ({
   const [errorImage, setErrorImage] = useState(false);
   const [percentAudio, setPercentAudio] = useState(0);
   const [percentImage, setPercentImage] = useState(0);
-  const [inputStyles, setInputStyles] = useState({
-    outlineColor: "#f08c51",
-    borderColor: "#CFD3D4",
-  });
-  const [labelStyles, setLabelStyles] = useState({
-    color: "#CFD3D4",
-  });
 
   const fileName = uploadedFile?.name?.split(".").slice(0, -1).join(".");
   const fileSize = uploadedFile?.size;
@@ -42,11 +34,9 @@ const EditInfo = ({
   const [genre, setGenre] = useState("None");
   const [artist, setArtist] = useState("");
   const [description, setDescription] = useState("");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const options = ["None", "Ballad", "Rock", "RnB", "Acoustic", "EDM"];
 
   const audioRef = useRef();
-  const inputRef = useRef(null);
+
   useEffect(() => {
     if (uploadedFile) {
       audioRef.current.src = URL.createObjectURL(uploadedFile);
@@ -206,37 +196,10 @@ const EditInfo = ({
       artist: artist,
     }));
   };
-  const handleChangeGenre = (genre) => {
-    setGenre(genre);
-    setInfoFile((prevInfoFile) => ({
-      ...prevInfoFile,
-      genre: genre,
-    }));
-    setInputStyles({
-      ...inputStyles,
-      border: "1px solid #474646b0",
-    });
-    setLabelStyles({
-      ...labelStyles,
-      color: "#474646b0",
-    });
-  };
+
   const handleChangeSlug = (slug) => {
     setSlug(slug);
   };
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (inputRef.current && !inputRef.current.contains(event.target)) {
-        setDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("click", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, []);
 
   return (
     <div
@@ -308,41 +271,11 @@ const EditInfo = ({
           />
           <div className="w-full flex gap-3">
             <div style={{ width: "calc(50% - 6px)" }}>
-              <label
-                className="text-xs"
-                style={labelStyles}
-                htmlFor="text-input"
-              >
-                Genre
-              </label>
-              <div
-                ref={inputRef}
-                id="genre"
-                className="flex relative justify-between items-center h-7 px-1 mt-1 rounded border"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                onBlur={(e) => handleBlur(e.target.value)}
-                style={inputStyles}
-              >
-                {genre}
-                {dropdownOpen ? (
-                  <IconChevronUp size={20} color="gray" />
-                ) : (
-                  <IconChevronDown size={20} color="gray" />
-                )}
-
-                {dropdownOpen && (
-                  <ul className="dropdown-list w-full h-24 absolute z-10 mt-32 -ml-1 bg-white border border-[#dcdcdc] rounded overflow-y-scroll">
-                    {options.map((option) => (
-                      <li
-                        key={option}
-                        onClick={() => handleChangeGenre(option)}
-                      >
-                        {option}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+              <Dropdown
+                genre={genre}
+                setGenre={setGenre}
+                setInfoFile={setInfoFile}
+              />
             </div>
 
             <div style={{ width: "calc(50% - 6px)" }}>
